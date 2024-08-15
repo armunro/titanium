@@ -1,7 +1,6 @@
 ﻿using Serilog;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
-using Titanium.Domain.Document;
 
 namespace Titanium.Domain;
 
@@ -10,7 +9,7 @@ public class DocumentProcessor
     private readonly ConfigManager _config;
     private readonly PathFinder _pathFinder;
     private readonly ILogger _logger;
-    public Action<BaseAspect> DocumentCompletedCallback { get; set; }
+    
 
     public DocumentProcessor(ConfigManager config, PathFinder pathFinder, ILogger logger)
     {

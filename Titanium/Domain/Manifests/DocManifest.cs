@@ -1,4 +1,4 @@
-﻿namespace Titanium.Domain.Document;
+﻿namespace Titanium.Domain.Manifests;
 
 public class DocManifest
 {

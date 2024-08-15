@@ -1,4 +1,4 @@
-﻿namespace Titanium.Domain.Aspect;
+﻿namespace Titanium.Domain.Manifests;
 
 public class AspectManifest
 {

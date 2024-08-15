@@ -4,19 +4,16 @@ using Titanium.Adapters.Generators;
 using Titanium.Domain;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
-using Titanium.Domain.Document;
 
 namespace Titanium.Commands;
 
 public class OcrAspectCommands : ICommandHandler
 {
+    public static Option<string> DocumentIdOption = new("--doc", "The id of the document");
     private readonly ConfigManager _config;
+    private readonly DocumentProcessor _documentProcessor;
     private readonly OcrAspectGenerator _ocrAspectGenerator;
     private readonly PathFinder _pathfinder;
-    private readonly DocumentProcessor _documentProcessor;
-
-
-    public static Option<string> DocumentIdOption = new("--doc", "The id of the document") { };
 
 
     public OcrAspectCommands(ConfigManager config,
@@ -44,7 +41,7 @@ public class OcrAspectCommands : ICommandHandler
 
         Directory.CreateDirectory(_pathfinder.GetDocAspectPath(_config.CurrentProject, docId, "ocr"));
         List<BaseAspect> aspects =
-            _documentProcessor.ProcessDocument(doc, (masterFile) =>
+            _documentProcessor.ProcessDocument(doc, masterFile =>
                 _ocrAspectGenerator.GenerateAspects(doc, masterFile));
         aspects.ForEach(aspect => doc.AddAspect(aspect));
         _config.SaveDoc(doc);

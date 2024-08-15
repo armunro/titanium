@@ -6,9 +6,8 @@ namespace Titanium.Commands;
 
 public class AddProjectCommand : ICommandHandler
 {
-    private readonly ConfigManager _config;
-
     public static readonly Option<string> ProjectNameOption = new("--name", "The name of the project");
+    private readonly ConfigManager _config;
 
     public AddProjectCommand(ConfigManager config)
     {

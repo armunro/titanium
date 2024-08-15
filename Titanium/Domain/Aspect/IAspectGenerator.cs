@@ -1,6 +1,4 @@
-﻿using Titanium.Domain.Document;
-
-namespace Titanium.Domain.Aspect;
+﻿namespace Titanium.Domain.Aspect;
 
 public interface IAspectGenerator
 {

@@ -1,4 +1,4 @@
-﻿namespace Titanium.Domain;
+﻿namespace Titanium.Domain.Manifests;
 
 public class MasterManifest
 {

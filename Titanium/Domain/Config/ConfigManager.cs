@@ -1,5 +1,6 @@
 ﻿using CSharpVitamins;
-using Titanium.Domain.Document;
+using Serilog;
+using Titanium.Domain.Manifests;
 using YamlDotNet.Serialization;
 
 namespace Titanium.Domain.Config;
@@ -7,18 +8,21 @@ namespace Titanium.Domain.Config;
 public class ConfigManager
 {
     readonly PathFinder _pathFinder;
+    private readonly ILogger _logger;
     RootConfig _rootConfig = new();
 
+    public RootConfig RootConfig => _rootConfig;
     public string CurrentProject => _rootConfig.CurrentProject;
     public PathFinder Pathfinder => _pathFinder;
 
 
-    public ConfigManager(PathFinder pathFinder)
+    public ConfigManager(PathFinder pathFinder, ILogger logger)
     {
         _pathFinder = pathFinder;
+        _logger = logger;
         LoadConfig();
     }
- 
+
 
     public void CreateProject(string? projectName)
     {
@@ -41,9 +45,13 @@ public class ConfigManager
 
     public void LoadConfig()
     {
-        if (!File.Exists(_pathFinder.GetConfigPath()))
+        string expectConfigPath = _pathFinder.GetConfigPath();
+        _logger.Debug("Expecting config file at {ConfigPath}", expectConfigPath);
+        if (!File.Exists(expectConfigPath))
         {
-            return;
+            _logger.Warning("Config file not found at {ConfigPath}. Initializing...", expectConfigPath);
+            _rootConfig = new RootConfig();
+            SaveConfig();
         }
 
         string yaml = File.ReadAllText(_pathFinder.GetConfigPath());
@@ -68,7 +76,7 @@ public class ConfigManager
 
     public Doc AddDoc()
     {
-        Doc doc = Doc.Create(_rootConfig.CurrentProject, ShortGuid.NewGuid(),  Environment.UserName);
+        Doc doc = Doc.Create(_rootConfig.CurrentProject, ShortGuid.NewGuid(), Environment.UserName);
         string docBasePath = _pathFinder.GetDocPath(doc.Project, doc.Id);
         string docMastersPath = _pathFinder.GetMasterDirectory(doc.Project, doc.Id);
         Directory.CreateDirectory(docBasePath);
@@ -80,30 +88,27 @@ public class ConfigManager
     public void ImportMasters(Doc doc, string source)
     {
         string mastersPath = _pathFinder.GetMasterDirectory(doc.Project, doc.Id);
+        _logger.Debug("Listing masters in {MastersPath}", mastersPath);
         if (Directory.Exists(source))
         {
             foreach (string file in Directory.GetFiles(source))
-            {
-                doc.AddMaster(new MasterManifest()
-                {
-                    Name = Path.GetFileNameWithoutExtension(file),
-                    Extension = Path.GetExtension(file),
-                    Created = DateTime.Now
-                });
-                File.Copy(file, Path.Join(mastersPath, Path.GetFileName(file)));
-            }
+                ImportMaster(doc, file, mastersPath);
         }
         else
+            ImportMaster(doc, source, mastersPath);
+    }
+
+    private void ImportMaster(Doc doc, string file, string mastersPath)
+    {
+        doc.AddMaster(new MasterManifest()
         {
-            
-            doc.AddMaster(new MasterManifest()
-            {
-                Name = Path.GetFileNameWithoutExtension(source),
-                Extension = Path.GetExtension(source),
-                Created = DateTime.Now
-            });
-            File.Copy(source, Path.Join(mastersPath, Path.GetFileName(source)));
-        }
+            Name = Path.GetFileNameWithoutExtension(file),
+            Extension = Path.GetExtension(file),
+            Created = DateTime.Now
+        });
+        string importPath = Path.Join(mastersPath, Path.GetFileName(file));
+        File.Copy(file, importPath);
+        _logger.Information("Imported Master: {ImportPath}", importPath);
     }
 
     public void SaveDoc(Doc doc)
@@ -122,7 +127,7 @@ public class ConfigManager
     {
         string yaml = File.ReadAllText(_pathFinder.GetDocManifestPath(_rootConfig.CurrentProject, docId));
         Doc doc = new DeserializerBuilder().Build().Deserialize<Doc>(yaml);
-        
+
         return doc;
     }
 }

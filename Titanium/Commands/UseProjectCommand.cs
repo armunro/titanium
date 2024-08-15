@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Serilog;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
@@ -10,11 +11,13 @@ public class UseProjectCommand : ICommandHandler
 
 
     private readonly ConfigManager _config;
+    private readonly ILogger _logger;
 
 
-    public UseProjectCommand(ConfigManager config)
+    public UseProjectCommand(ConfigManager config, ILogger logger)
     {
         _config = config;
+        _logger = logger;
     }
 
     public int Invoke(InvocationContext context)
@@ -24,7 +27,9 @@ public class UseProjectCommand : ICommandHandler
 
     public Task<int> InvokeAsync(InvocationContext context)
     {
-        _config.UseProject(context.ParseResult.GetValueForOption(ProjectNameOption)!);
+        string projectName = context.ParseResult.GetValueForOption(ProjectNameOption)!;
+        _config.UseProject(projectName);
+        _logger.Information("Using project `{Project}`", projectName);
         _config.SaveConfig();
         return Task.FromResult(0);
     }

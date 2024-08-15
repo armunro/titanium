@@ -2,33 +2,26 @@
 using System.Text;
 using OpenAI;
 using OpenAI.Chat;
+using Titanium.Domain;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
-using Titanium.Domain.Document;
 using Titanium.Samples;
 
 namespace Titanium.Adapters.Generators;
 
 public class GptAspectGenerator : IAspectGenerator
 {
-    readonly ConfigManager _config;
-    readonly OpenAIClient _client;
-    string _aspect;
-    string _variant;
-    string _extension;
+    private readonly OpenAIClient _client;
+    private readonly ConfigManager _config;
+    private string _aspect;
+    private string _extension;
+    private string _variant;
 
 
     public GptAspectGenerator(ConfigManager config, OpenAIClient client)
     {
         _config = config;
         _client = client;
-    }
-
-    public void SetSource(string aspect, string variant, string extension)
-    {
-        _aspect = aspect;
-        _variant = variant;
-        _extension = extension;
     }
 
 
@@ -62,6 +55,13 @@ public class GptAspectGenerator : IAspectGenerator
 
 
         return aspects;
+    }
+
+    public void SetSource(string aspect, string variant, string extension)
+    {
+        _aspect = aspect;
+        _variant = variant;
+        _extension = extension;
     }
 }
 

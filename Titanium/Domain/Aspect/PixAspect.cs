@@ -2,9 +2,10 @@
 
 namespace Titanium.Domain.Aspect;
 
-public  class PixAspect: Aspect<Pix>
+public class PixAspect : Aspect<Pix>
 {
-    public PixAspect(string masterName, Pix content, string name, string extension, string variant) : base(masterName, content, name, extension, variant)
+    public PixAspect(string masterName, Pix content, string name, string extension, string variant) : base(masterName,
+        content, name, extension, variant)
     {
     }
 

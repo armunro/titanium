@@ -42,19 +42,7 @@ public class PathFinder
     }
 
     public string GetDocPath(string project, string docId) => Path.Join(GetProjectPath(project), docId);
-
-    public string GetOcrAspectPromptPath()
-    {
-        return Path.Join(GetTitaniumHomePath(), "_ocr.prompts");
-    }
-
-    public string GetLogPath()
-    {
-        return Path.Join(GetTitaniumHomePath(), "_logs");
-    }
-
-    public string GetTessdataPath()
-    {
-        return Path.Join(GetTitaniumHomePath(), "_tessdata");
-    }
+    public string GetOcrAspectPromptPath() => Path.Join(GetTitaniumHomePath(), "_ocr.prompts");
+    public string GetLogPath() => Path.Join(GetTitaniumHomePath(), "_logs");
+    public string GetTessdataPath() => Path.Join(GetTitaniumHomePath(), "_tessdata");
 }

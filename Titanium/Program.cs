@@ -1,6 +1,7 @@
 ﻿using System.ClientModel;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Windows.Input;
 using Autofac;
 using OpenAI;
 using Serilog;
@@ -32,15 +33,16 @@ builder.RegisterType<Installer>().AsSelf();
 builder.RegisterType<PathFinder>().AsSelf().SingleInstance();
 builder.RegisterType<ApiKeyCredential>().AsSelf();
 
-builder.RegisterInstance(new ApiKeyCredential(""));
-builder.RegisterInstance(new OpenAIClient(new ApiKeyCredential("")));
+
+builder.Register<OpenAIClient>((c, p) => new(new ApiKeyCredential(c.Resolve<ConfigManager>().RootConfig.OpenAIApiKey)));
 
 
 builder.Register<ILogger>((c, p) =>
 {
     return new LoggerConfiguration()
         .MinimumLevel.Debug()
-        .WriteTo.File(Path.Combine(c.Resolve<PathFinder>().GetLogPath(), "log-.txt"), rollingInterval: RollingInterval.Day )
+        .WriteTo.File(Path.Combine(c.Resolve<PathFinder>().GetLogPath(), "log-.txt"),
+            rollingInterval: RollingInterval.Day)
         .WriteTo.Console(theme: AnsiConsoleTheme.Code)
         .CreateLogger();
 }).SingleInstance();
@@ -56,9 +58,11 @@ Command docAspectOcr = new("ocr", "Generate a plain-text aspect using OCR (OCR)"
 Command docAspectGptTranslate = new("gpt", "Generate a text JSON aspect.");
 Command docView = new("view", "View a document.");
 Command config = new("config", "Manage configuration.");
+Command configGet = new Command("get", "Get a specific configuration key value");
 Command document = new("doc", "Manage documents in the current project.");
 Command addDocument = new("add", "Add a document to the current project.");
 Command install = new Command("install", "Installs core dependancies");
+
 
 
 //Project
@@ -107,7 +111,13 @@ docView.AddOption(ViewDocCommand.DocumentIdOption);
 docView.Handler = container.ResolveNamed<ICommandHandler>(nameof(ViewDocCommand));
 
 // Config
+config.AddCommand(configGet);
+config.AddOption(ConfigCommand.ConfigKeyOption);
+config.AddOption(ConfigCommand.ConfigValueOption);
+
 config.Handler = container.ResolveNamed<ICommandHandler>(nameof(ConfigCommand));
+
+
 
 
 // Define the util command and its subcommand sguid
@@ -116,7 +126,7 @@ Command sguid = new("sguid", "Generate a short GUID.");
 
 
 // Implement the handler for sguid command
-sguid.Handler =  container.ResolveNamed<ICommandHandler>(nameof(SGuidCommandHandler));
+sguid.Handler = container.ResolveNamed<ICommandHandler>(nameof(SGuidCommandHandler));
 
 install.AddOption(InstallCommand.LanguageOption);
 install.Handler = container.ResolveNamed<ICommandHandler>(nameof(InstallCommand));

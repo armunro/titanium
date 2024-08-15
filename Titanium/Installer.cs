@@ -47,13 +47,13 @@ public class Installer
         string url = $"https://github.com/tesseract-ocr/tessdata/raw/main/{language}.traineddata"; 
         string filePath = Path.Combine(_pathFinder.GetTessdataPath(), $"{language}.traineddata");
         _logger.Debug("Http-GET: {Url}", url);
-        _logger.Debug("Save: {FilePath}", filePath);
 
         HttpResponseMessage response = await client.GetAsync(url);
         try
         {
-            response.EnsureSuccessStatusCode();
             _logger.Debug("HTTP-Response: {Code}", response.StatusCode.ToString());
+            response.EnsureSuccessStatusCode();
+            _logger.Debug("Save: {FilePath}", filePath);
             using FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
             await response.Content.CopyToAsync(fileStream);
         }
