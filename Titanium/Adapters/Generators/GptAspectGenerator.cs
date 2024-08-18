@@ -15,7 +15,6 @@ public class GptAspectGenerator : IAspectGenerator
     private readonly ConfigManager _config;
     private string _aspect;
     private string _extension;
-    private string _variant;
 
 
     public GptAspectGenerator(ConfigManager config, OpenAIClient client)
@@ -25,9 +24,9 @@ public class GptAspectGenerator : IAspectGenerator
     }
 
 
-    public List<BaseAspect> GenerateAspects(Doc doc, string masterFilePath)
+    public List<Aspect> GenerateAspects(Doc doc, string masterFilePath)
     {
-        List<BaseAspect> aspects = new();
+        List<Aspect> aspects = new();
 
 
         string[] aspectVariantPaths = _config.Pathfinder.GetAspectFilePaths(doc.Project, doc.Id, _aspect, _extension);
@@ -50,7 +49,7 @@ public class GptAspectGenerator : IAspectGenerator
                 jsonOut.Append(text);
             }
 
-            aspects.Add(BaseAspect.NewJson(test, jsonOut.ToString(), "gpt"));
+            aspects.Add(Aspect.NewJson(test, jsonOut.ToString(), "gpt"));
         }
 
 
@@ -60,14 +59,6 @@ public class GptAspectGenerator : IAspectGenerator
     public void SetSource(string aspect, string variant, string extension)
     {
         _aspect = aspect;
-        _variant = variant;
         _extension = extension;
-    }
-}
-
-public class GptTransformAspectGenerator : GptAspectGenerator
-{
-    public GptTransformAspectGenerator(ConfigManager config, OpenAIClient client) : base(config, client)
-    {
     }
 }

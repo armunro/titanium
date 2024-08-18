@@ -7,9 +7,8 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class GptFormatCommand : ICommandHandler
+public class GptFormat : TitaniumCommand
 {
-    private readonly ConfigManager _config;
     readonly GptAspectGenerator _gptAspectGenerator;
     private readonly DocumentProcessor _documentProcessor;
 
@@ -18,37 +17,35 @@ public class GptFormatCommand : ICommandHandler
     public static Option<string> SourceAspectVariantOption = new("--variant", "The aspect variant to use for input.");
     public static Option<string> SourceAspectExtensionOption = new("--extension", "The The aspect extension");
 
-    public GptFormatCommand(ConfigManager config, GptAspectGenerator gptAspectGenerator,
-        DocumentProcessor documentProcessor)
+    public GptFormat(ConfigManager config, GptAspectGenerator gptAspectGenerator,
+        DocumentProcessor documentProcessor): base("gpt", "Generate GPT aspects for a document", config)
     {
-        _config = config;
         _gptAspectGenerator = gptAspectGenerator;
         _documentProcessor = documentProcessor;
     }
-    public int Invoke(InvocationContext context)
+
+    public override List<Option> DefineOptions() => new() { DocumentIdOption, SourceAspectOption, SourceAspectVariantOption, SourceAspectExtensionOption };
+    public override Task<int> HandleAsync(InvocationContext context)
     {
         string? docId = context.ParseResult.GetValueForOption(DocumentIdOption);
         string? aspectName = context.ParseResult.GetValueForOption(SourceAspectOption);
         string? variantName = context.ParseResult.GetValueForOption(SourceAspectVariantOption);
         string? extension = context.ParseResult.GetValueForOption(SourceAspectExtensionOption);
 
-        Doc doc = _config.GetDoc(docId);
+        Doc doc = Config.GetDoc(docId);
 
-        List<BaseAspect> aspects = _documentProcessor.ProcessDocument(doc, masterFilePath =>
+        List<Aspect> aspects = _documentProcessor.ProcessDocument(doc, masterFilePath =>
         {
-            Directory.CreateDirectory(_config.Pathfinder.GetDocAspectPath(_config.CurrentProject, docId, "gpt"));
+            Directory.CreateDirectory(Config.Pathfinder.GetDocAspectPath(Config.CurrentProject, docId, "gpt"));
             _gptAspectGenerator.SetSource(aspectName!, variantName!, extension!);
-            List<BaseAspect> aspects = _gptAspectGenerator.GenerateAspects(doc, masterFilePath);
+            List<Aspect> aspects = _gptAspectGenerator.GenerateAspects(doc, masterFilePath);
             return aspects;
         });
 
         aspects.ForEach(aspect => doc.AddAspect(aspect));
-        _config.SaveDoc(doc);
-        return 0;
+        Config.SaveDoc(doc);
+        return  Task.FromResult(0);
     }
 
-    public Task<int> InvokeAsync(InvocationContext context)
-    {
-        return Task.FromResult(Invoke(context));
-    }
+
 }

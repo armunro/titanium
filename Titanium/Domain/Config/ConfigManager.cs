@@ -130,4 +130,9 @@ public class ConfigManager
 
         return doc;
     }
+
+    public string[] GetDocNames()
+    {
+        return  Directory.GetDirectories(_pathFinder.GetProjectPath(CurrentProject)).Select(x=> Path.GetFileName(x)).ToArray();
+    }
 }

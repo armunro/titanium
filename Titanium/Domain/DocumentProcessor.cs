@@ -10,7 +10,6 @@ public class DocumentProcessor
     private readonly PathFinder _pathFinder;
     private readonly ILogger _logger;
     
-
     public DocumentProcessor(ConfigManager config, PathFinder pathFinder, ILogger logger)
     {
         _config = config;
@@ -18,14 +17,14 @@ public class DocumentProcessor
         _logger = logger;
     }
 
-    public List<BaseAspect> ProcessDocument(Doc doc, Func<string, List<BaseAspect>> processor)
+    public List<Aspect.Aspect> ProcessDocument(Doc doc, Func<string, List<Aspect.Aspect>> processor)
     {
-        List<BaseAspect> aspects = new();
+        List<Aspect.Aspect> aspects = new();
         string[] masterFiles = _pathFinder.GetMasterFiles(_config.CurrentProject, doc.Id);
         foreach (string masterFile in masterFiles)
         {
             _logger.Information($"Processing Master: {masterFile}");
-            List<BaseAspect> baseAspects = processor.Invoke(masterFile);
+            List<Aspect.Aspect> baseAspects = processor.Invoke(masterFile);
             baseAspects.ForEach(aspect =>
             {
                 string path = _pathFinder.GetAspectFilePath(aspect.MasterName, _config.CurrentProject, doc.Id,

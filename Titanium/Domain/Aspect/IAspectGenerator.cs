@@ -2,6 +2,6 @@
 
 public interface IAspectGenerator
 {
-    List<BaseAspect> GenerateAspects(Doc doc, string masterFilePath);
+    List<Aspect> GenerateAspects(Doc doc, string masterFilePath);
 
 }

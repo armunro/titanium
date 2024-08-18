@@ -4,28 +4,26 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class InstallCommand : ICommandHandler
+public class Install : TitaniumCommand
 {
-    private readonly ConfigManager _config;
+    
     private readonly Installer _installer;
     public static Option<string> LanguageOption = new("--lang", "The tesseract language to download.");
 
-    public InstallCommand(ConfigManager config,
-        Installer installer)
+    public Install(ConfigManager config,
+        Installer installer) : base("install", "Installs core dependancies", config)
     {
-        _config = config;
+        
         _installer = installer;
     }
 
-    public int Invoke(InvocationContext context)
+
+    public override List<Option> DefineOptions() => new() { LanguageOption };
+
+    public override Task<int> HandleAsync(InvocationContext context)
     {
         string? lang = context.ParseResult.GetValueForOption(LanguageOption);
         _installer.Install(lang!);
-        return 0;
-    }
-
-    public Task<int> InvokeAsync(InvocationContext context)
-    {
-        return Task.FromResult(Invoke(context));
+        return Task.FromResult(0);
     }
 }

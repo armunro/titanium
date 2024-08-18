@@ -1,20 +1,18 @@
-﻿using OpenAI.VectorStores;
-using Serilog;
+﻿using Serilog;
 using Titanium.Domain;
-using Titanium.Domain.Config;
 using Titanium.Samples;
 
 namespace Titanium;
 
 public class Installer
 {
-    private readonly ConfigManager _config;
+    
     private readonly PathFinder _pathFinder;
     private readonly ILogger _logger;
 
-    public Installer (ConfigManager config, PathFinder pathFinder, ILogger logger)
+    public Installer (PathFinder pathFinder, ILogger logger)
     {
-        _config = config;
+        
         _pathFinder = pathFinder;
         _logger = logger;
     }

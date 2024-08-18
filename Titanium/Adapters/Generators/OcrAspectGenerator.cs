@@ -19,9 +19,9 @@ public class OcrAspectGenerator : IAspectGenerator
         _pathfinder = pathfinder;
     }
 
-    public List<BaseAspect> GenerateAspects(Doc doc, string masterFilePath)
+    public List<Aspect> GenerateAspects(Doc doc, string masterFilePath)
     {
-        List<BaseAspect> aspects = new();
+        List<Aspect> aspects = new();
         string aspectBase = _pathfinder.GetDocAspectPath(_config.CurrentProject, doc.Id, AspectName);
         Directory.CreateDirectory(aspectBase);
         string masterName = Path.GetFileNameWithoutExtension(masterFilePath);
@@ -31,14 +31,14 @@ public class OcrAspectGenerator : IAspectGenerator
             using Pix? img = Pix.LoadFromFile(masterFilePath);
             using Page? page = engine.Process(img);
 
-            aspects.Add(BaseAspect.NewText(masterName, page.GetText(), AspectName));
-            aspects.Add(BaseAspect.NewXml(masterName, page.GetAltoText(0), "alto"));
-            aspects.Add(BaseAspect.NewHtml(masterName, page.GetHOCRText(0), "hocr"));
-            aspects.Add(BaseAspect.NewPix(masterName, page.GetThresholdedImage(), "thresholded"));
+            aspects.Add(Aspect.NewText(masterName, page.GetText(), AspectName));
+            aspects.Add(Aspect.NewXml(masterName, page.GetAltoText(0), "alto"));
+            aspects.Add(Aspect.NewHtml(masterName, page.GetHOCRText(0), "hocr"));
+            aspects.Add(Aspect.NewPix(masterName, page.GetThresholdedImage(), "thresholded"));
         }
         catch (Exception e)
         {
-            aspects.Add(BaseAspect.NewOcrErrorText(masterName, e));
+            aspects.Add(Aspect.NewOcrErrorText(masterName, e));
         }
 
         return aspects;

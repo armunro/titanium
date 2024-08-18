@@ -7,45 +7,39 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class OcrAspectCommands : ICommandHandler
+public class OcrAspect : TitaniumCommand
 {
     public static Option<string> DocumentIdOption = new("--doc", "The id of the document");
-    private readonly ConfigManager _config;
     private readonly DocumentProcessor _documentProcessor;
     private readonly OcrAspectGenerator _ocrAspectGenerator;
-    private readonly PathFinder _pathfinder;
 
 
-    public OcrAspectCommands(ConfigManager config,
+    public OcrAspect(ConfigManager config,
         OcrAspectGenerator ocrAspectGenerator,
-        PathFinder pathfinder,
-        DocumentProcessor documentProcessor)
+        DocumentProcessor documentProcessor) : base("ocr", "Generate OCR aspects for a document", config)
     {
-        _config = config;
         _ocrAspectGenerator = ocrAspectGenerator;
-        _pathfinder = pathfinder;
         _documentProcessor = documentProcessor;
+        DocumentIdOption.AddCompletions(Config.GetDocNames());
     }
 
 
-    public int Invoke(InvocationContext context)
-    {
-        throw new NotImplementedException();
-    }
+    public override List<Option> DefineOptions() => new() { DocumentIdOption };
 
-    public Task<int> InvokeAsync(InvocationContext context)
+    public override Task<int> HandleAsync(InvocationContext context)
     {
         string? docId = context.ParseResult.GetValueForOption(DocumentIdOption);
-        Doc doc = _config.GetDoc(docId);
+        Doc doc = Config.GetDoc(docId);
 
-
-        Directory.CreateDirectory(_pathfinder.GetDocAspectPath(_config.CurrentProject, docId, "ocr"));
-        List<BaseAspect> aspects =
+        Directory.CreateDirectory(Config.Pathfinder.GetDocAspectPath(Config.CurrentProject, docId, "ocr"));
+        List<Aspect> aspects =
             _documentProcessor.ProcessDocument(doc, masterFile =>
                 _ocrAspectGenerator.GenerateAspects(doc, masterFile));
         aspects.ForEach(aspect => doc.AddAspect(aspect));
-        _config.SaveDoc(doc);
+        Config.SaveDoc(doc);
 
         return Task.FromResult(0);
     }
+
+
 }

@@ -27,14 +27,14 @@ public class Doc
         Masters.Add(aspect);
     }
 
-    public void AddAspect(Aspect.BaseAspect baseAspect)
+    public void AddAspect(Aspect.Aspect aspect)
     {
-        if (Aspects.Any(a => a.Name == baseAspect.Name && a.Variant == baseAspect.Variant))
-            Aspects.RemoveAll(a => a.Name == baseAspect.Name && a.Variant == baseAspect.Variant);
+        if (Aspects.Any(a => a.Name == aspect.Name && a.Variant == aspect.Variant))
+            Aspects.RemoveAll(a => a.Name == aspect.Name && a.Variant == aspect.Variant);
         Aspects.Add(new AspectManifest
         {
-            Name = baseAspect.Name,
-            Variant = baseAspect.Variant,
+            Name = aspect.Name,
+            Variant = aspect.Variant,
             Date = DateTime.Now
         });
     }
