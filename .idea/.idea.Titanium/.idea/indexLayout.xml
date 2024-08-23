@@ -5,6 +5,9 @@
     <explicitIncludes>
       <Path>README.md</Path>
     </explicitIncludes>
-    <explicitExcludes />
+    <explicitExcludes>
+      <Path>../../../Users/andrewm/.nuget/packages/tesseract/5.2.0/x64</Path>
+      <Path>../../../Users/andrewm/.nuget/packages/tesseract/5.2.0/x86</Path>
+    </explicitExcludes>
   </component>
 </project>

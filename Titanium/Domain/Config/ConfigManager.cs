@@ -1,6 +1,7 @@
 ﻿using CSharpVitamins;
 using Serilog;
 using Titanium.Domain.Manifests;
+using Titanium.Domain.Paths;
 using YamlDotNet.Serialization;
 
 namespace Titanium.Domain.Config;
@@ -8,17 +9,18 @@ namespace Titanium.Domain.Config;
 public class ConfigManager
 {
     readonly PathFinder _pathFinder;
+    
     private readonly ILogger _logger;
     RootConfig _rootConfig = new();
-
     public RootConfig RootConfig => _rootConfig;
     public string CurrentProject => _rootConfig.CurrentProject;
     public PathFinder Pathfinder => _pathFinder;
-
+    
 
     public ConfigManager(PathFinder pathFinder, ILogger logger)
     {
         _pathFinder = pathFinder;
+        
         _logger = logger;
         LoadConfig();
     }
@@ -28,11 +30,11 @@ public class ConfigManager
     {
         if (projectName == null) projectName = "default";
 
-        ProjectConfig project = new(name: projectName,
-            path: Path.Join(_pathFinder.GetTitaniumHomePath(), projectName),
-            description: "Default project configuration.");
-        CreateProjectDirectory(projectName);
-        _rootConfig.Projects.Add(project);
+        string projectPath = _pathFinder.GetProjectPath(projectName);
+        Directory.CreateDirectory(projectPath);
+        
+        ProjectConfig project = new(name: projectName, projectPath, description: "Default project configuration.");
+       _rootConfig.Projects.Add(project);
         UseProject(projectName);
         SaveConfig();
     }
@@ -58,11 +60,6 @@ public class ConfigManager
         _rootConfig = new DeserializerBuilder().Build().Deserialize<RootConfig>(yaml);
     }
 
-    void CreateProjectDirectory(string projectName)
-    {
-        Directory.CreateDirectory(Path.Join(_pathFinder.GetTitaniumHomePath(), projectName));
-    }
-
 
     public List<ProjectConfig> GetProjects()
     {
@@ -77,10 +74,9 @@ public class ConfigManager
     public Doc AddDoc()
     {
         Doc doc = Doc.Create(_rootConfig.CurrentProject, ShortGuid.NewGuid(), Environment.UserName);
-        string docBasePath = _pathFinder.GetDocPath(doc.Project, doc.Id);
-        string docMastersPath = _pathFinder.GetMasterDirectory(doc.Project, doc.Id);
-        Directory.CreateDirectory(docBasePath);
-        Directory.CreateDirectory(docMastersPath);
+        Directory.CreateDirectory(_pathFinder.GetDocPath(doc.Project, doc.Id));
+        
+
         SaveDoc(doc);
         return doc;
     }
@@ -89,6 +85,7 @@ public class ConfigManager
     {
         string mastersPath = _pathFinder.GetMasterDirectory(doc.Project, doc.Id);
         _logger.Debug("Listing masters in {MastersPath}", mastersPath);
+        Directory.CreateDirectory(mastersPath);
         if (Directory.Exists(source))
         {
             foreach (string file in Directory.GetFiles(source))
@@ -133,6 +130,7 @@ public class ConfigManager
 
     public string[] GetDocNames()
     {
-        return  Directory.GetDirectories(_pathFinder.GetProjectPath(CurrentProject)).Select(x=> Path.GetFileName(x)).ToArray();
+        return Directory.GetDirectories(_pathFinder.GetProjectPath(CurrentProject)).Select(x => Path.GetFileName(x))
+            .ToArray();
     }
 }

@@ -1,28 +1,31 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Serilog;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class Project : TitaniumCommand
+public class ListCommand : TitaniumCommand
 {
     private readonly ConfigManager _config;
+    private readonly ILogger _logger;
 
-    public Project(ConfigManager config) : base("project", "Manage project")
+    public ListCommand(ConfigManager config, ILogger logger ) : base("list", "List documents")
     {
         _config = config;
+        _logger = logger;
     }
 
     public override List<Option> DefineOptions() => new();
 
     protected override Task<int> HandleAsync(InvocationContext context)
     {
-        List<ProjectConfig> projects = _config.GetProjects();
-        foreach (ProjectConfig project in projects)
+        foreach (string docName in _config.GetDocNames())
         {
-            Console.WriteLine(project.Name);
+            _logger.Information(docName);
         }
 
         return Task.FromResult(0);
     }
+    
 }

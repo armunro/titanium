@@ -7,6 +7,7 @@ public class TextAspect : Aspect<string>
         Content = content;
     }
 
+    
 
     public override void Save(string filePath)
     {

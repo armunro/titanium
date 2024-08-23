@@ -1,6 +1,6 @@
 ﻿using CSharpVitamins;
 
-namespace Titanium.Domain;
+namespace Titanium.Domain.Paths;
 
 public class PathFinder
 {

@@ -1,10 +1,7 @@
-## Introduction
-
-Document scanning and processing tool.
+# [Ti]tanium
+Document management and processing.
 
 ## Quick Start
-
-
 ### Install Core Dependancies
 
 ```shell
@@ -35,8 +32,9 @@ The OCR Aspect only requires the `docId` parameter. All valid Tesseract image ty
 .\Titanium.exe doc aspect ocr --docId "I8GDCPqqsUyjiEZWF6-dfg"
 ```
 ## The Code
-
  - `Titanium/Commands` - The entry point for all commands and subcommands.
  - `Titanium/Adapter` - Interchangable functionality.
  - `Titanium/Domain` - Core concepts and functionality.
 
+
+ti aspcect {docId} ocr/hocr

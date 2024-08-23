@@ -6,18 +6,16 @@ namespace Titanium.Commands;
 
 public abstract class TitaniumCommand : Command, ICommandHandler
 {
-    public ConfigManager Config { get; set; }
-
-    protected TitaniumCommand(string name, string? description, ConfigManager config) : base(name, description)
+    protected TitaniumCommand(string name, string? description) : base(name, description)
     {
-        Config = config;
-        this.Handler = this;
+        Handler = this;
+        DefineArguments().ForEach(AddArgument);
+        DefineOptions().ForEach(AddOption);
     }
 
-    public abstract List<Option> DefineOptions();
-    public abstract Task<int> HandleAsync(InvocationContext context);
-
-    //CommandHandler
+    public virtual List<Option> DefineOptions() => new();
+    public virtual List<Argument> DefineArguments() => new();
+    protected abstract Task<int> HandleAsync(InvocationContext context);
     public int Invoke(InvocationContext context) => HandleAsync(context).Result;
     public Task<int> InvokeAsync(InvocationContext context) => HandleAsync(context);
 }

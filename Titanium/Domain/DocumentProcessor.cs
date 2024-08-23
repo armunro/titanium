@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
+using Titanium.Domain.Paths;
 
 namespace Titanium.Domain;
 
@@ -9,7 +10,7 @@ public class DocumentProcessor
     private readonly ConfigManager _config;
     private readonly PathFinder _pathFinder;
     private readonly ILogger _logger;
-    
+
     public DocumentProcessor(ConfigManager config, PathFinder pathFinder, ILogger logger)
     {
         _config = config;
@@ -20,6 +21,7 @@ public class DocumentProcessor
     public List<Aspect.Aspect> ProcessDocument(Doc doc, Func<string, List<Aspect.Aspect>> processor)
     {
         List<Aspect.Aspect> aspects = new();
+        
         string[] masterFiles = _pathFinder.GetMasterFiles(_config.CurrentProject, doc.Id);
         foreach (string masterFile in masterFiles)
         {
@@ -27,10 +29,9 @@ public class DocumentProcessor
             List<Aspect.Aspect> baseAspects = processor.Invoke(masterFile);
             baseAspects.ForEach(aspect =>
             {
-                string path = _pathFinder.GetAspectFilePath(aspect.MasterName, _config.CurrentProject, doc.Id,
+                string path = _pathFinder.GetAspectFilePath(Path.GetFileName(aspect.MasterName), _config.CurrentProject, doc.Id,
                     aspect.Name, doc.Name,
                     aspect.Extension, aspect.Variant);
-                _logger.Information($"Save Aspect -> {path}");
                 aspect.Save(path);
                 aspects.Add(aspect);
             });
