@@ -4,11 +4,11 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class Project : TitaniumCommand
+public class ProjectCommand : TitaniumCommand
 {
     private readonly ConfigManager _config;
 
-    public Project(ConfigManager config) : base("project", "Manage project")
+    public ProjectCommand(ConfigManager config) : base("project", "Manage project")
     {
         _config = config;
     }

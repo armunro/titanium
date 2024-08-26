@@ -16,9 +16,9 @@ public class AspectCommand : TitaniumCommand
     public static Argument<string> AspectArg = new("aspect", "The aspect to derive.");
     private readonly DocumentProcessor _documentProcessor;
     private readonly PathScaffolder _scaffolder;
-    private readonly ILogger _logger;
     private readonly ConfigManager _config;
     private readonly IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> _processors;
+    private readonly ILogger _logger;
 
 
     public AspectCommand(ConfigManager config,
@@ -48,7 +48,7 @@ public class AspectCommand : TitaniumCommand
         List<Aspect> aspects = _documentProcessor.ProcessDocument(doc, masterFile =>
         {
             List<Aspect> newAspects = new List<Aspect>(); 
-            var enumerable = _processors.Where(x => x.Metadata.Type == meta.Type)
+            IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> enumerable = _processors.Where(x => x.Metadata.Type == meta.Type)
                 .Where(x => x.Metadata.Variant == meta.Variant || meta.Variant == "*");
             foreach (Lazy<IAspectProcessor,AspectMetadataAttribute> processor in enumerable)
             {

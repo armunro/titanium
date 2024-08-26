@@ -5,7 +5,7 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class ProjectUse : TitaniumCommand
+public class ProjectUseCommand : TitaniumCommand
 {
     public static readonly Argument<string> ProjectNameArg = new("--name", "The name of the project");
 
@@ -13,7 +13,7 @@ public class ProjectUse : TitaniumCommand
     private readonly ILogger _logger;
 
 
-    public ProjectUse(ConfigManager config, ILogger logger) : base("use", "Use a project")
+    public ProjectUseCommand(ConfigManager config, ILogger logger) : base("use", "Use a project")
     {
         _config = config;
         _logger = logger;

@@ -13,11 +13,10 @@ using Titanium.Commands;
 using Titanium.Domain;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
-using Titanium.Domain.Extensions;
 using Titanium.Domain.Paths;
 
 ILogger Logger(IComponentContext componentContext) =>
-    new LoggerConfiguration().MinimumLevel.Debug()
+    new LoggerConfiguration().MinimumLevel.Information()
         .WriteTo.File(Path.Combine(componentContext.Resolve<PathFinder>().GetLogPath(), "log-.txt"),
             rollingInterval: RollingInterval.Day)
         .WriteTo.Console(theme: AnsiConsoleTheme.Code).CreateLogger();
@@ -26,8 +25,13 @@ ContainerBuilder builder = new();
 builder.RegisterModule<AttributedMetadataModule>();
 builder.RegisterType<ConfigManager>().AsSelf().SingleInstance();
 
-builder.RegisterCosmicCommands();
-builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly() ).Where(x=>x.IsAssignableTo<IAspectProcessor>()).As<IAspectProcessor>().WithAttributedMetadata<AspectMetadataAttribute>();
+builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly()!)
+    .Where(t => t.IsAssignableTo<TitaniumCommand>());
+builder.RegisterAssemblyTypes(Assembly.GetEntryAssembly()! )
+    .Where(x=>x.IsAssignableTo<IAspectProcessor>())
+    .As<IAspectProcessor>()
+    .WithAttributedMetadata<AspectMetadataAttribute>();
+
 
 builder.RegisterType<DocumentProcessor>().AsSelf();
 builder.RegisterType<Installer>().AsSelf();
@@ -42,14 +46,14 @@ IContainer container = builder.Build();
 
 RootCommand rootCommand = new("[Ti]tanium - Lightweight document management & processing");
 
-Command docCommand = container.Resolve<ListCommand>();
-Command projectCommand = container.Resolve<Project>();
-Command addProjectCommand = container.Resolve<ProjectAdd>();
-Command useProjectCommand = container.Resolve<ProjectUse>();
-
+Command listCommand = container.Resolve<ListCommand>();
+Command projectCommand = container.Resolve<ProjectCommand>();
+Command addProjectCommand = container.Resolve<ProjectAddCommand>();
+Command useProjectCommand = container.Resolve<ProjectUseCommand>();
 Command aspectCommand = container.Resolve<AspectCommand>();
-Command configCommand = container.Resolve<Config>();
-Command docImportCommand = container.Resolve<DocImport>();
+Command configCommand = container.Resolve<ConfigCommand>();
+Command docImportCommand = container.Resolve<DocImportCommand>();
+Command docNewCommand = container.Resolve<DocNewCommand>();
 Command installCommand = container.Resolve<InstallCommand>();
 
 projectCommand.AddCommand(addProjectCommand);
@@ -57,7 +61,8 @@ projectCommand.AddCommand(useProjectCommand);
 
 
 rootCommand.AddCommand(projectCommand);
-rootCommand.AddCommand(docCommand);
+rootCommand.AddCommand(listCommand);
+rootCommand.AddCommand(docNewCommand);
 rootCommand.Add(docImportCommand);
 rootCommand.AddCommand(configCommand);
 rootCommand.AddCommand(installCommand);

@@ -5,12 +5,12 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class DocImport : TitaniumCommand
+public class DocImportCommand : TitaniumCommand
 {
     private readonly ConfigManager _configManager;
     public static Argument<string> SourceArgument = new("source", "The source of the document");
 
-    public DocImport(ConfigManager configManager) : base("import", "Create a new document from existing files.")
+    public DocImportCommand(ConfigManager configManager) : base("import", "Create a new document from existing files.")
     {
         _configManager = configManager;
     }

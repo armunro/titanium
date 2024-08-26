@@ -4,12 +4,12 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class ProjectAdd : TitaniumCommand
+public class ProjectAddCommand : TitaniumCommand
 {
     private readonly ConfigManager _config;
     public static readonly Option<string> ProjectNameOption = new("--name", "The name of the project");
 
-    public ProjectAdd(ConfigManager config) : base("add", "Create a new project.")
+    public ProjectAddCommand(ConfigManager config) : base("add", "Create a new project.")
     {
         _config = config;
     }

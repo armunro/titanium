@@ -5,7 +5,7 @@ using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class Config : TitaniumCommand
+public class ConfigCommand : TitaniumCommand
 {
     public static readonly Option<string> ConfigKeyOption = new("--key", "The configuration key");
     public static readonly Option<string> ConfigValueOption = new("--value", "The configuration value");
@@ -13,7 +13,7 @@ public class Config : TitaniumCommand
     private readonly ConfigManager _config;
     private readonly ILogger _logger;
 
-    public Config(ConfigManager config, ILogger logger) : base("config", "Get or set configuration values")
+    public ConfigCommand(ConfigManager config, ILogger logger) : base("config", "Get or set configuration values")
     {
         _config = config;
         _logger = logger;
