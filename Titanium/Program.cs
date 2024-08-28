@@ -5,6 +5,7 @@ using System.CommandLine.Parsing;
 using System.Reflection;
 using Autofac;
 using Autofac.Extras.AttributeMetadata;
+using Cosmic;
 using OpenAI;
 using Serilog;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -14,7 +15,6 @@ using Titanium.Domain;
 using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
 using Titanium.Domain.Paths;
-
 ILogger Logger(IComponentContext componentContext) =>
     new LoggerConfiguration().MinimumLevel.Information()
         .WriteTo.File(Path.Combine(componentContext.Resolve<PathFinder>().GetLogPath(), "log-.txt"),
@@ -55,6 +55,7 @@ Command configCommand = container.Resolve<ConfigCommand>();
 Command docImportCommand = container.Resolve<DocImportCommand>();
 Command docNewCommand = container.Resolve<DocNewCommand>();
 Command installCommand = container.Resolve<InstallCommand>();
+Command sampleCommand = container.Resolve<SampleCommand>();
 
 projectCommand.AddCommand(addProjectCommand);
 projectCommand.AddCommand(useProjectCommand);
@@ -67,6 +68,7 @@ rootCommand.Add(docImportCommand);
 rootCommand.AddCommand(configCommand);
 rootCommand.AddCommand(installCommand);
 rootCommand.AddCommand(aspectCommand);
+rootCommand.AddCommand(sampleCommand);
 
 Parser parser = new CommandLineBuilder(rootCommand).UseDefaults().Build();
 

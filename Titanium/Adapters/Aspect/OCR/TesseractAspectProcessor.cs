@@ -6,6 +6,6 @@ namespace Titanium.Adapters.Aspect.OCR;
 
 public abstract class TesseractAspectProcessor : IAspectProcessor
 {
-    public abstract Domain.Aspect.Aspect ProcessAspect(Doc doc, string masterFilePath);
+    public abstract Domain.DocAspect ProcessAspect(Doc doc, string masterFilePath);
 
 }

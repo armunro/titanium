@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Titanium.Domain.Aspect;
 using Titanium.Domain.Config;
 using Titanium.Domain.Paths;
 
@@ -18,15 +17,15 @@ public class DocumentProcessor
         _logger = logger;
     }
 
-    public List<Aspect.Aspect> ProcessDocument(Doc doc, Func<string, List<Aspect.Aspect>> processor)
+    public List<DocAspect> ProcessDocument(Doc doc, Func<string, List<DocAspect>> processor)
     {
-        List<Aspect.Aspect> aspects = new();
+        List<DocAspect> aspects = new();
         
         string[] masterFiles = _pathFinder.GetMasterFiles(_config.CurrentProject, doc.Id);
         foreach (string masterFile in masterFiles)
         {
             _logger.Information($"Processing Master: {masterFile}");
-            List<Aspect.Aspect> baseAspects = processor.Invoke(masterFile);
+            List<DocAspect> baseAspects = processor.Invoke(masterFile);
             baseAspects.ForEach(aspect =>
             {
                 string path = _pathFinder.GetAspectFilePath(Path.GetFileName(aspect.MasterName), _config.CurrentProject, doc.Id,

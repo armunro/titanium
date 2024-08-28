@@ -14,11 +14,11 @@ public class ImageHocrHtmlAspectProcessor : TesseractAspectProcessor
         _pathfinder = pathfinder;
     }
 
-    public override Domain.Aspect.Aspect ProcessAspect(Doc doc, string masterFilePath)
+    public override Domain.DocAspect ProcessAspect(Doc doc, string masterFilePath)
     {
         using TesseractEngine engine = new(_pathfinder.GetTessdataPath(), "eng", EngineMode.Default);
         using Pix? img = Pix.LoadFromFile(masterFilePath);
         using Page? page = engine.Process(img);
-        return Domain.Aspect.Aspect.NewHtml(masterFilePath, page.GetText(), "ocr.hocr");
+        return Domain.DocAspect.NewHtml(masterFilePath, page.GetText(), "ocr.hocr");
     }
 }

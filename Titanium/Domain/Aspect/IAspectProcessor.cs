@@ -1,6 +1,6 @@
-﻿namespace Titanium.Domain.Aspect;
+﻿namespace Titanium.Domain;
 
 public interface IAspectProcessor
 {
-    Aspect ProcessAspect(Doc doc, string masterFilePath);
+    DocAspect ProcessAspect(Doc doc, string masterFilePath);
 }

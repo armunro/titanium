@@ -1,8 +1,8 @@
 ﻿namespace Titanium.Domain.Aspect;
 
-public class TextAspect : Aspect<string>
+public class TextDocAspect : DocAspect<string>
 {
-    public TextAspect(string masterName, string name, string content, string variant, string extension) : base(masterName,content, name, extension, variant)
+    public TextDocAspect(string masterName, string name, string content, string variant, string extension) : base(masterName,content, name, extension, variant)
     {
         Content = content;
     }

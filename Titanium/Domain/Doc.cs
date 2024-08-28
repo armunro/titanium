@@ -21,7 +21,7 @@ public class Doc
         Masters.Add(aspect);
     }
 
-    public void AddAspect(Aspect.Aspect aspect)
+    public void AddAspect(DocAspect aspect)
     {
         if (Aspects.Any(a => a.Name == aspect.Name))
             Aspects.RemoveAll(a => a.Name == aspect.Name);
@@ -45,9 +45,9 @@ public class Doc
         };
     }
 
-    public void AddAspects(IEnumerable<Aspect.Aspect> aspects)
+    public void AddAspects(IEnumerable<DocAspect> aspects)
     {
-        foreach (Aspect.Aspect aspect in aspects) AddAspect(aspect);
+        foreach (DocAspect aspect in aspects) AddAspect(aspect);
     }
 
 

@@ -1,7 +1,5 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using Autofac.Features.Indexed;
-using Autofac.Features.Metadata;
 using Serilog;
 using Titanium.Domain;
 using Titanium.Domain.Aspect;
@@ -45,9 +43,9 @@ public class AspectCommand : TitaniumCommand
 
 
         _scaffolder.ScaffoldDocumentAspectDirectory(_config.CurrentProject, docId, "ocr.text");
-        List<Aspect> aspects = _documentProcessor.ProcessDocument(doc, masterFile =>
+        List<DocAspect> aspects = _documentProcessor.ProcessDocument(doc, masterFile =>
         {
-            List<Aspect> newAspects = new List<Aspect>(); 
+            List<DocAspect> newAspects = new List<DocAspect>(); 
             IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> enumerable = _processors.Where(x => x.Metadata.Type == meta.Type)
                 .Where(x => x.Metadata.Variant == meta.Variant || meta.Variant == "*");
             foreach (Lazy<IAspectProcessor,AspectMetadataAttribute> processor in enumerable)

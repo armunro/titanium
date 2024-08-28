@@ -14,11 +14,11 @@ public class ImageAltoXmlAspectProcessor : TesseractAspectProcessor
         _pathfinder = pathfinder;
     }
 
-    public override Domain.Aspect.Aspect ProcessAspect(Doc doc, string masterFilePath)
+    public override DocAspect ProcessAspect(Doc doc, string masterFilePath)
     {
         using TesseractEngine engine = new(_pathfinder.GetTessdataPath(), "eng", EngineMode.Default);
         using Pix? img = Pix.LoadFromFile(masterFilePath);
         using Page? page = engine.Process(img);
-        return Domain.Aspect.Aspect.NewXml(masterFilePath, page.GetText(), "ocr.alto"); 
+        return DocAspect.NewXml(masterFilePath, page.GetText(), "ocr.alto"); 
     }
 }

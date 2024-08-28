@@ -14,11 +14,11 @@ public class ImageTextAspectProcessor : TesseractAspectProcessor
         _pathfinder = pathfinder;
     }
 
-    public override Domain.Aspect.Aspect ProcessAspect(Doc doc, string masterFilePath)
+    public override Domain.DocAspect ProcessAspect(Doc doc, string masterFilePath)
     {
         using TesseractEngine engine = new(_pathfinder.GetTessdataPath(), "eng", EngineMode.Default);
         using Pix? img = Pix.LoadFromFile(masterFilePath);
         using Page? page = engine.Process(img);
-        return Domain.Aspect.Aspect.NewText(masterFilePath, page.GetText(), "ocr.text");
+        return Domain.DocAspect.NewText(masterFilePath, page.GetText(), "ocr.text");
     }
 }
