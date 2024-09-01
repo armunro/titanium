@@ -1,35 +1,36 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using Serilog;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class ProjectUseCommand : TitaniumCommand
+[CliCommand("use", "Use a project")]
+public class ProjectUseCommand : CliCommand
 {
+    [CliArgument("name", "The name of the project")]
     public static readonly Argument<string> ProjectNameArg = new("--name", "The name of the project");
 
     private readonly ConfigManager _config;
     private readonly ILogger _logger;
 
 
-    public ProjectUseCommand(ConfigManager config, ILogger logger) : base("use", "Use a project")
+    public ProjectUseCommand(ConfigManager config, ILogger logger)
     {
         _config = config;
         _logger = logger;
     }
 
-    public override List<Argument> DefineArguments()
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
-        return new List<Argument>() { ProjectNameArg };
-    }
-
-    protected override Task<int> HandleAsync(InvocationContext context)
-    {
-        string projectName = context.ParseResult.GetValueForArgument(ProjectNameArg)!;
+        string projectName = context.Argument<string>(ProjectNameArg)!;
         _config.UseProject(projectName);
         _logger.Information("Using project `{Project}`", projectName);
         _config.SaveConfig();
         return Task.FromResult(0);
     }
+
+ 
 }

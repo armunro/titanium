@@ -1,32 +1,37 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using Serilog;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class ConfigCommand : TitaniumCommand
+[CliCommand( "config", "Get or set configuration values" )]
+public class ConfigCommand : CliCommand
 {
+    [CliOption( "--key", "The configuration key" )]
     public static readonly Option<string> ConfigKeyOption = new("--key", "The configuration key");
+    [CliOption( "--value", "The configuration value" )]
     public static readonly Option<string> ConfigValueOption = new("--value", "The configuration value");
 
     private readonly ConfigManager _config;
     private readonly ILogger _logger;
 
-    public ConfigCommand(ConfigManager config, ILogger logger) : base("config", "Get or set configuration values")
+    public ConfigCommand(ConfigManager config, ILogger logger) 
     {
         _config = config;
         _logger = logger;
     }
 
 
-    public override List<Option> DefineOptions() => new() { ConfigKeyOption, ConfigValueOption };
+   
 
-    protected override Task<int> HandleAsync(InvocationContext context)
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
         RootConfig rootConfig = _config.RootConfig;
-        string? key = context.ParseResult.GetValueForOption(ConfigKeyOption);
-        string? value = context.ParseResult.GetValueForOption(ConfigValueOption);
+        string? key = context.Option<string>(ConfigKeyOption);
+        string? value = context.Option<string>(ConfigValueOption);
         GetOrSetConfigProperty(rootConfig, key, value);
         return Task.FromResult(0);
     }

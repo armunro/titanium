@@ -1,18 +1,15 @@
 ﻿using System.CommandLine.Invocation;
 using System.Drawing;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using SkiaSharp;
 
 namespace Titanium.Commands;
 
-public class SampleCommand : TitaniumCommand
+[CliCommand("sample", "Generates sample images for testing.")]
+public class SampleCommand : CliCommand
 {
-    public SampleCommand() : base("sample", "Generate and test samaple images.") { }
-    protected override Task<int> HandleAsync(InvocationContext context)
-    {
-        
-      DrawTextOnImage("Hello, World!", "output.png");
-        return Task.FromResult(0);
-    }
+  
 
     public static void DrawTextOnImage(string text, string outputImagePath, int width = 500, int height = 300)
     {
@@ -53,5 +50,11 @@ public class SampleCommand : TitaniumCommand
             }
 
         }
+    }
+
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
+    {
+        DrawTextOnImage("Hello, World!", "output.png");
+        return Task.FromResult(0);
     }
 }

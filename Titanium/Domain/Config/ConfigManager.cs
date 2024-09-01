@@ -1,4 +1,5 @@
-﻿using CSharpVitamins;
+﻿using Cosmic.Aspects.Configuration;
+using CSharpVitamins;
 using Serilog;
 using Titanium.Domain.Manifests;
 using Titanium.Domain.Paths;
@@ -6,7 +7,7 @@ using YamlDotNet.Serialization;
 
 namespace Titanium.Domain.Config;
 
-public class ConfigManager
+public class ConfigManager : CosmicConfig<RootConfig>
 {
     readonly PathFinder _pathFinder;
     
@@ -15,9 +16,9 @@ public class ConfigManager
     public RootConfig RootConfig => _rootConfig;
     public string CurrentProject => _rootConfig.CurrentProject;
     public PathFinder Pathfinder => _pathFinder;
-    
 
-    public ConfigManager(PathFinder pathFinder, ILogger logger)
+
+    public ConfigManager(PathFinder pathFinder, ILogger logger) : base(pathFinder.GetConfigPath(), logger)
     {
         _pathFinder = pathFinder;
         

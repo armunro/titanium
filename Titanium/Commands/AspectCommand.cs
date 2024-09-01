@@ -1,5 +1,7 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using Serilog;
 using Titanium.Domain;
 using Titanium.Domain.Aspect;
@@ -8,10 +10,15 @@ using Titanium.Domain.Paths;
 
 namespace Titanium.Commands;
 
-public class AspectCommand : TitaniumCommand
+[CliCommand("aspect", "Derive an aspect")]
+public class AspectCommand : CliCommand
 {
+    [CliArgument("doc", "The id of the document")]
     public static Argument<string> DocumentIdArg = new("doc", "The id of the document");
+
+    [CliArgument("aspect", "The aspect to derive.")]
     public static Argument<string> AspectArg = new("aspect", "The aspect to derive.");
+
     private readonly DocumentProcessor _documentProcessor;
     private readonly PathScaffolder _scaffolder;
     private readonly ConfigManager _config;
@@ -21,9 +28,9 @@ public class AspectCommand : TitaniumCommand
 
     public AspectCommand(ConfigManager config,
         DocumentProcessor documentProcessor,
-        PathScaffolder scaffolder, 
+        PathScaffolder scaffolder,
         ILogger logger,
-        IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> processors) : base("aspect", "Derive a document aspect.")
+        IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> processors)
     {
         _config = config;
         _documentProcessor = documentProcessor;
@@ -32,12 +39,11 @@ public class AspectCommand : TitaniumCommand
         _processors = processors;
     }
 
-    public override List<Argument> DefineArguments() => new() { DocumentIdArg, AspectArg };
 
-    protected override Task<int> HandleAsync(InvocationContext context)
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
-        string? docId = context.ParseResult.GetValueForArgument(DocumentIdArg);
-        string? aspectName = context.ParseResult.GetValueForArgument(AspectArg);
+        string? docId = context.Argument<string>(DocumentIdArg);
+        string? aspectName = context.Argument<string>(AspectArg);
         AspectMetadataAttribute meta = AspectMetadataAttribute.Parse(aspectName);
         Doc doc = _config.GetDoc(docId);
 
@@ -45,12 +51,14 @@ public class AspectCommand : TitaniumCommand
         _scaffolder.ScaffoldDocumentAspectDirectory(_config.CurrentProject, docId, "ocr.text");
         List<DocAspect> aspects = _documentProcessor.ProcessDocument(doc, masterFile =>
         {
-            List<DocAspect> newAspects = new List<DocAspect>(); 
-            IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> enumerable = _processors.Where(x => x.Metadata.Type == meta.Type)
+            List<DocAspect> newAspects = new List<DocAspect>();
+            IEnumerable<Lazy<IAspectProcessor, AspectMetadataAttribute>> enumerable = _processors
+                .Where(x => x.Metadata.Type == meta.Type)
                 .Where(x => x.Metadata.Variant == meta.Variant || meta.Variant == "*");
-            foreach (Lazy<IAspectProcessor,AspectMetadataAttribute> processor in enumerable)
+            foreach (Lazy<IAspectProcessor, AspectMetadataAttribute> processor in enumerable)
             {
-                _logger.Information("Creating aspect `{Type}.{Variant}`", processor.Metadata.Type, processor.Metadata.Variant);
+                _logger.Information("Creating aspect `{Type}.{Variant}`", processor.Metadata.Type,
+                    processor.Metadata.Variant);
                 newAspects.Add(processor.Value.ProcessAspect(doc, masterFile));
             }
 

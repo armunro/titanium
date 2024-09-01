@@ -1,21 +1,21 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class ProjectCommand : TitaniumCommand
+[CliCommand("project", "Project commands")]
+public class ProjectCommand : CliCommand
 {
     private readonly ConfigManager _config;
 
-    public ProjectCommand(ConfigManager config) : base("project", "Manage project")
+    public ProjectCommand(ConfigManager config)
     {
         _config = config;
     }
-
-    public override List<Option> DefineOptions() => new();
-
-    protected override Task<int> HandleAsync(InvocationContext context)
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
         List<ProjectConfig> projects = _config.GetProjects();
         foreach (ProjectConfig project in projects)

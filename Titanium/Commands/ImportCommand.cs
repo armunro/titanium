@@ -1,25 +1,27 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 using Titanium.Domain;
 using Titanium.Domain.Config;
 
 namespace Titanium.Commands;
 
-public class DocImportCommand : TitaniumCommand
+[CliCommand("import", "Create a new document from existing files.")]
+public class ImportCommand : CliCommand
 {
     private readonly ConfigManager _configManager;
+
+    [CliArgument("source", "The source of the document")]
     public static Argument<string> SourceArgument = new("source", "The source of the document");
 
-    public DocImportCommand(ConfigManager configManager) : base("import", "Create a new document from existing files.")
+    public ImportCommand(ConfigManager configManager)
     {
         _configManager = configManager;
     }
-
-    public override List<Argument> DefineArguments() => new() { SourceArgument };
-
-    protected override Task<int> HandleAsync(InvocationContext context)
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
-        string source = context.ParseResult.GetValueForArgument(SourceArgument);
+        string source = context.Argument<string>(SourceArgument);
         Doc doc = _configManager.AddDoc();
         if (!string.IsNullOrWhiteSpace(source)) _configManager.ImportMasters(doc, source);
         _configManager.SaveDoc(doc);

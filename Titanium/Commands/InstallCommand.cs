@@ -1,27 +1,29 @@
 ﻿using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cosmic.CommandLine;
+using Cosmic.CommandLine.Attributes;
 
 namespace Titanium.Commands;
 
-public class InstallCommand : TitaniumCommand
+[CliCommand("install", "Install tesseract training data and samples")]
+public class InstallCommand : CliCommand
 {
-    
+    // Private fields
     private readonly Installer _installer;
-    public static Argument<string> LanguageArg = new(name: "lang",  description: "The tesseract language to download.",getDefaultValue:() => "");
 
-    public InstallCommand(Installer installer) : base("install", "Installs core dependancies")
+    //Options Arguments
+    [CliArgument("lang", "The tesseract language to download.")]
+    public static Argument<string> LanguageArg = new(name: "lang", description: "The tesseract language to download.",
+        getDefaultValue: () => "");
+
+    public InstallCommand(Installer installer)
     {
-        
         _installer = installer;
     }
 
-
-    public override List<Argument> DefineArguments() => new() { LanguageArg };
-    
-
-    protected override Task<int> HandleAsync(InvocationContext context)
+    protected override Task<int> ExecuteCommand(CliCommandContext context)
     {
-        string? lang = context.ParseResult.GetValueForArgument(LanguageArg);
+        string? lang = context.Argument<string>(LanguageArg);
         _installer.InstallTesseractTrainingData(lang).Wait();
         _installer.InstallSamples();
         _installer.AddCurrentDirectoryToPathVariable();
