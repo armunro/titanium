@@ -147,6 +147,121 @@ public class TitaniumDbContext : DbContext, ITitaniumDbContext
         }
     }
 
+    public async Task DeleteWorkspaceAsync(Guid workspaceId, CancellationToken cancellationToken = default)
+    {
+        var workspace = await Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId, cancellationToken);
+        if (workspace == null) return;
+
+        var commIds = await Communications.Where(c => c.WorkspaceId == workspaceId).Select(c => c.Id).ToListAsync(cancellationToken);
+        var claimIds = await Claims.Where(c => c.WorkspaceId == workspaceId).Select(c => c.Id).ToListAsync(cancellationToken);
+        var matterIds = await Matters.Where(m => m.WorkspaceId == workspaceId).Select(m => m.Id).ToListAsync(cancellationToken);
+        var narrativeIds = await Narratives.Where(n => matterIds.Contains(n.MatterId)).Select(n => n.Id).ToListAsync(cancellationToken);
+
+        if (Database.IsRelational())
+        {
+            try
+            {
+                await Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = OFF;", cancellationToken);
+            }
+            catch
+            {
+                // Ignore if pragma is unsupported
+            }
+
+            if (claimIds.Count > 0)
+            {
+                await ClaimRelationships.Where(r => claimIds.Contains(r.SourceClaimId) || claimIds.Contains(r.TargetClaimId)).ExecuteDeleteAsync(cancellationToken);
+            }
+
+            if (commIds.Count > 0)
+            {
+                await EvidenceLinks.Where(e => commIds.Contains(e.SourceCommunicationId)).ExecuteDeleteAsync(cancellationToken);
+                await Statements.Where(s => commIds.Contains(s.CommunicationId)).ExecuteDeleteAsync(cancellationToken);
+            }
+
+            if (narrativeIds.Count > 0)
+            {
+                await NarrativeItems.Where(ni => narrativeIds.Contains(ni.NarrativeId)).ExecuteDeleteAsync(cancellationToken);
+                await Narratives.Where(n => narrativeIds.Contains(n.Id)).ExecuteDeleteAsync(cancellationToken);
+            }
+
+            if (matterIds.Count > 0)
+            {
+                await Dossiers.Where(d => matterIds.Contains(d.MatterId)).ExecuteDeleteAsync(cancellationToken);
+                await Matters.Where(m => matterIds.Contains(m.Id)).ExecuteDeleteAsync(cancellationToken);
+            }
+
+            await Events.Where(e => e.WorkspaceId == workspaceId).ExecuteDeleteAsync(cancellationToken);
+            await Persons.Where(p => p.WorkspaceId == workspaceId).ExecuteDeleteAsync(cancellationToken);
+            await Claims.Where(c => c.WorkspaceId == workspaceId).ExecuteDeleteAsync(cancellationToken);
+            await Communications.Where(c => c.WorkspaceId == workspaceId).ExecuteDeleteAsync(cancellationToken);
+            await Conversations.Where(c => c.WorkspaceId == workspaceId).ExecuteDeleteAsync(cancellationToken);
+            await Workspaces.Where(w => w.Id == workspaceId).ExecuteDeleteAsync(cancellationToken);
+
+            try
+            {
+                await Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;", cancellationToken);
+            }
+            catch
+            {
+                // Ignore pragma error
+            }
+        }
+        else
+        {
+            if (claimIds.Count > 0)
+            {
+                var rels = await ClaimRelationships.Where(r => claimIds.Contains(r.SourceClaimId) || claimIds.Contains(r.TargetClaimId)).ToListAsync(cancellationToken);
+                ClaimRelationships.RemoveRange(rels);
+            }
+
+            if (commIds.Count > 0)
+            {
+                var evLinks = await EvidenceLinks.Where(e => commIds.Contains(e.SourceCommunicationId)).ToListAsync(cancellationToken);
+                EvidenceLinks.RemoveRange(evLinks);
+
+                var stmts = await Statements.Where(s => commIds.Contains(s.CommunicationId)).ToListAsync(cancellationToken);
+                Statements.RemoveRange(stmts);
+            }
+
+            if (narrativeIds.Count > 0)
+            {
+                var nItems = await NarrativeItems.Where(ni => narrativeIds.Contains(ni.NarrativeId)).ToListAsync(cancellationToken);
+                NarrativeItems.RemoveRange(nItems);
+
+                var narrs = await Narratives.Where(n => narrativeIds.Contains(n.Id)).ToListAsync(cancellationToken);
+                Narratives.RemoveRange(narrs);
+            }
+
+            if (matterIds.Count > 0)
+            {
+                var dossiers = await Dossiers.Where(d => matterIds.Contains(d.MatterId)).ToListAsync(cancellationToken);
+                Dossiers.RemoveRange(dossiers);
+
+                var matters = await Matters.Where(m => matterIds.Contains(m.Id)).ToListAsync(cancellationToken);
+                Matters.RemoveRange(matters);
+            }
+
+            var events = await Events.Where(e => e.WorkspaceId == workspaceId).ToListAsync(cancellationToken);
+            Events.RemoveRange(events);
+
+            var persons = await Persons.Where(p => p.WorkspaceId == workspaceId).ToListAsync(cancellationToken);
+            Persons.RemoveRange(persons);
+
+            var claims = await Claims.Where(c => c.WorkspaceId == workspaceId).ToListAsync(cancellationToken);
+            Claims.RemoveRange(claims);
+
+            var comms = await Communications.Where(c => c.WorkspaceId == workspaceId).ToListAsync(cancellationToken);
+            Communications.RemoveRange(comms);
+
+            var convs = await Conversations.Where(c => c.WorkspaceId == workspaceId).ToListAsync(cancellationToken);
+            Conversations.RemoveRange(convs);
+
+            Workspaces.Remove(workspace);
+            await SaveChangesAsync(cancellationToken);
+        }
+    }
+
     public async Task PurgeAllDataAsync(CancellationToken cancellationToken = default)
     {
         if (Database.IsRelational())

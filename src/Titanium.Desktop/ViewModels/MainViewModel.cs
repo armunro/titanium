@@ -172,7 +172,9 @@ public class MainViewModel : ViewModelBase
     public IAsyncRelayCommand RefreshDataCommand { get; }
     public IAsyncRelayCommand SyncMailboxCommand { get; }
     public IAsyncRelayCommand CreateWorkspaceCommand { get; }
+    public IAsyncRelayCommand<Workspace> DeleteWorkspaceCommand { get; }
     public IAsyncRelayCommand SaveWorkspaceFoldersCommand { get; }
+    public IAsyncRelayCommand<Workspace> OpenWorkspaceSettingsCommand { get; }
     public IAsyncRelayCommand SaveSettingsCommand { get; }
     public IAsyncRelayCommand TestM365ConnectionCommand { get; }
     public IAsyncRelayCommand SignOutM365Command { get; }
@@ -194,12 +196,49 @@ public class MainViewModel : ViewModelBase
         RefreshDataCommand = new AsyncRelayCommand(LoadDataAsync);
         SyncMailboxCommand = new AsyncRelayCommand(ExecuteSyncMailboxAsync);
         CreateWorkspaceCommand = new AsyncRelayCommand(CreateDefaultWorkspaceAsync);
+        DeleteWorkspaceCommand = new AsyncRelayCommand<Workspace>(ExecuteDeleteWorkspaceAsync);
         SaveWorkspaceFoldersCommand = new AsyncRelayCommand(ExecuteSaveWorkspaceFoldersAsync);
+        OpenWorkspaceSettingsCommand = new AsyncRelayCommand<Workspace>(ExecuteOpenWorkspaceSettingsAsync);
         SaveSettingsCommand = new AsyncRelayCommand(ExecuteSaveSettingsAsync);
         TestM365ConnectionCommand = new AsyncRelayCommand(ExecuteTestM365ConnectionAsync);
         SignOutM365Command = new AsyncRelayCommand(ExecuteSignOutM365Async);
         PurgeDatabaseCommand = new AsyncRelayCommand(ExecutePurgeDatabaseAsync);
         OpenSettingsCommand = new RelayCommand(() => SelectedTabIndex = 3);
+    }
+
+    public async Task ExecuteOpenWorkspaceSettingsAsync(Workspace? workspace)
+    {
+        var targetWorkspace = workspace ?? SelectedWorkspace;
+        if (targetWorkspace == null) return;
+
+        SelectedWorkspace = targetWorkspace;
+
+        if (System.Windows.Application.Current != null)
+        {
+            var dialog = new Views.WorkspaceSettingsDialog(targetWorkspace)
+            {
+                Owner = System.Windows.Application.Current.MainWindow
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                if (dialog.IsDeleted)
+                {
+                    await DeleteWorkspaceInternalAsync(targetWorkspace, promptUser: false);
+                }
+                else
+                {
+                    _dbContext.UpdateEntity(targetWorkspace);
+                    await _dbContext.SaveChangesAsync();
+
+                    UpdateWorkspaceFoldersText();
+                    OnPropertyChanged(nameof(Workspaces));
+                    OnPropertyChanged(nameof(SelectedWorkspace));
+
+                    StatusMessage = $"Workspace '{targetWorkspace.Name}' settings saved (Folders: {string.Join(", ", targetWorkspace.TargetFolders ?? new List<string>())}).";
+                }
+            }
+        }
     }
 
     private void UpdateWorkspaceFoldersText()
@@ -529,6 +568,67 @@ public class MainViewModel : ViewModelBase
         await _dbContext.SaveChangesAsync();
         Workspaces.Add(newWs);
         SelectedWorkspace = newWs;
+    }
+
+    private async Task ExecuteDeleteWorkspaceAsync(Workspace? workspace)
+    {
+        await DeleteWorkspaceInternalAsync(workspace, promptUser: true);
+    }
+
+    public async Task DeleteWorkspaceInternalAsync(Workspace? workspace, bool promptUser = true)
+    {
+        var targetWorkspace = workspace ?? SelectedWorkspace;
+        if (targetWorkspace == null) return;
+
+        if (promptUser && System.Windows.Application.Current != null)
+        {
+            var confirmResult = System.Windows.MessageBox.Show(
+                $"Are you sure you want to delete workspace '{targetWorkspace.Name}'?\n\nThis will permanently delete this workspace and all its associated communications, claims, and matters.",
+                "Confirm Workspace Deletion",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (confirmResult != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
+        IsBusy = true;
+        StatusMessage = $"Deleting workspace '{targetWorkspace.Name}'...";
+        try
+        {
+            await _dbContext.DeleteWorkspaceAsync(targetWorkspace.Id);
+            Workspaces.Remove(targetWorkspace);
+
+            if (SelectedWorkspace?.Id == targetWorkspace.Id)
+            {
+                SelectedWorkspace = Workspaces.FirstOrDefault();
+                if (SelectedWorkspace == null)
+                {
+                    var defaultWs = new Workspace
+                    {
+                        Name = "Primary Workspace",
+                        Description = "Default Evidence Management Workspace"
+                    };
+                    _dbContext.AddEntity(defaultWs);
+                    await _dbContext.SaveChangesAsync();
+                    Workspaces.Add(defaultWs);
+                    SelectedWorkspace = defaultWs;
+                }
+            }
+
+            await LoadMattersAndCommunicationsAsync();
+            StatusMessage = $"Workspace '{targetWorkspace.Name}' deleted.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error deleting workspace: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private async Task ExecutePurgeDatabaseAsync()

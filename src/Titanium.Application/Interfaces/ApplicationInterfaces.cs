@@ -112,6 +112,7 @@ public interface ITitaniumDbContext
     void RemoveEntity<T>(T entity) where T : class;
 
     Task PurgeAllDataAsync(CancellationToken cancellationToken = default);
+    Task DeleteWorkspaceAsync(Guid workspaceId, CancellationToken cancellationToken = default);
     Task InitializeDatabaseAsync(CancellationToken cancellationToken = default);
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

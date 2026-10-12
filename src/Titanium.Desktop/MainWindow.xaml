@@ -60,32 +60,59 @@
         <!-- Main 3-Pane Investigation Layout -->
         <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="260" MinWidth="200"/>
-                <ColumnDefinition Width="380" MinWidth="250"/>
-                <ColumnDefinition Width="*" MinWidth="350"/>
+                <ColumnDefinition Width="260" MinWidth="180"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="380" MinWidth="220"/>
+                <ColumnDefinition Width="2"/>
+                <ColumnDefinition Width="*" MinWidth="300"/>
             </Grid.ColumnDefinitions>
 
             <!-- Left Pane: Workspaces & Matters -->
-            <Border Grid.Column="0" Background="#252526" BorderBrush="#3F3F46" BorderThickness="0,0,1,0" Padding="10">
+            <Border Grid.Column="0" Background="#252526" Padding="10">
                 <DockPanel>
-                    <TextBlock Text="WORKSPACES" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
-                    <ListBox ItemsSource="{Binding Workspaces}" SelectedItem="{Binding SelectedWorkspace}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="0,0,0,8" DockPanel.Dock="Top" MaxHeight="120">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <TextBlock Text="WORKSPACES" FontWeight="SemiBold" FontSize="11" Foreground="#888888" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="+ New" Command="{Binding CreateWorkspaceCommand}"
+                                    Background="#333337" Foreground="#CCCCCC" BorderBrush="#3F3F46" Padding="6,2" FontSize="10" Margin="0,0,4,0"
+                                    ToolTip="Create a new workspace"/>
+                            <Button Content="⚙ Edit" Command="{Binding OpenWorkspaceSettingsCommand}" CommandParameter="{Binding SelectedWorkspace}"
+                                    Background="#333337" Foreground="#CCCCCC" BorderBrush="#3F3F46" Padding="6,2" FontSize="10" Margin="0,0,4,0"
+                                    ToolTip="Configure Selected Workspace Settings and Email Sync Folders"/>
+                            <Button Content="🗑 Delete" Command="{Binding DeleteWorkspaceCommand}" CommandParameter="{Binding SelectedWorkspace}"
+                                    Background="#4A1818" Foreground="#FF9999" BorderBrush="#662222" Padding="6,2" FontSize="10"
+                                    ToolTip="Delete Selected Workspace and Associated Data"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <ListBox x:Name="WorkspacesListBox" ItemsSource="{Binding Workspaces}" SelectedItem="{Binding SelectedWorkspace}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="0,0,0,8" DockPanel.Dock="Top" MaxHeight="180">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="ContextMenu">
+                                    <Setter.Value>
+                                        <ContextMenu Background="#252526" BorderBrush="#3F3F46" Foreground="#CCCCCC">
+                                            <MenuItem Header="Workspace Settings..."
+                                                      Command="{Binding PlacementTarget.Tag.DataContext.OpenWorkspaceSettingsCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Background="#252526" Foreground="#CCCCCC"/>
+                                            <Separator Background="#3F3F46"/>
+                                            <MenuItem Header="Delete Workspace"
+                                                      Command="{Binding PlacementTarget.Tag.DataContext.DeleteWorkspaceCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      Background="#252526" Foreground="#FF8888"/>
+                                        </ContextMenu>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource AncestorType=ListBox}}"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" FontWeight="Medium" Padding="4"/>
+                                <Grid Margin="4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" VerticalAlignment="Center"/>
+                                </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    
-                    <!-- Workspace Target Folders Configuration -->
-                    <Border Background="#1E1E1E" CornerRadius="4" Padding="8" Margin="0,0,0,12" DockPanel.Dock="Top" BorderBrush="#3F3F46" BorderThickness="1">
-                        <StackPanel>
-                            <TextBlock Text="SYNC FOLDERS" FontWeight="SemiBold" FontSize="10" Foreground="#4EC9B0" Margin="0,0,0,4"/>
-                            <TextBlock Text="Pull emails only from folder(s):" FontSize="11" Foreground="#888888" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding WorkspaceTargetFoldersText, UpdateSourceTrigger=PropertyChanged}" Background="#252526" Foreground="#FFFFFF" BorderBrush="#3F3F46" Padding="4" FontSize="11" Margin="0,0,0,6" ToolTip="Comma or semicolon separated folder names, e.g. 'Inbox, Dispute, Legal, Archive'"/>
-                            <Button Content="Save Folders" Command="{Binding SaveWorkspaceFoldersCommand}" Background="#0E639C" Foreground="White" FontSize="11" Padding="8,4" HorizontalAlignment="Right" BorderThickness="0"/>
-                        </StackPanel>
-                    </Border>
 
                     <TextBlock Text="MATTERS" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,4,0,8"/>
                     <ListBox ItemsSource="{Binding Matters}" SelectedItem="{Binding SelectedMatter}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
@@ -98,32 +125,74 @@
                 </DockPanel>
             </Border>
 
+            <!-- Splitter 1 -->
+            <GridSplitter Grid.Column="1" Width="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ShowsPreview="False" Cursor="SizeWE"/>
+
             <!-- Center Pane: Communications History -->
-            <Border Grid.Column="1" Background="#1E1E1E" BorderBrush="#3F3F46" BorderThickness="0,0,1,0" Padding="10">
+            <Border Grid.Column="2" Background="#1E1E1E" Padding="10">
                 <DockPanel>
                     <TextBlock Text="COMMUNICATION EXPLORER" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
-                    <ListBox ItemsSource="{Binding Communications}" SelectedItem="{Binding SelectedCommunication}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                    <ListBox ItemsSource="{Binding Communications}" SelectedItem="{Binding SelectedCommunication}"
+                             Background="Transparent" BorderThickness="0" Foreground="#CCCCCC"
+                             HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="Margin" Value="0,0,0,6"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListBoxItem">
+                                            <Border x:Name="ItemBorder"
+                                                    Background="#2D2D30"
+                                                    BorderBrush="#3F3F46"
+                                                    BorderThickness="1"
+                                                    CornerRadius="4"
+                                                    Padding="10"
+                                                    HorizontalAlignment="Stretch"
+                                                    SnapsToDevicePixels="True">
+                                                <ContentPresenter HorizontalAlignment="Stretch"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#38383C"/>
+                                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#007ACC"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#323238"/>
+                                                    <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#007ACC"/>
+                                                    <Setter TargetName="ItemBorder" Property="BorderThickness" Value="1"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="#2D2D30" CornerRadius="4" Padding="8" Margin="0,0,0,6">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Subject}" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
-                                        <TextBlock Text="{Binding Sender}" Foreground="#9CDCFE" FontSize="11" Margin="0,2,0,0"/>
-                                        <TextBlock Text="{Binding BodyText}" Foreground="#888888" FontSize="11" MaxHeight="32" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
-                                    </StackPanel>
-                                </Border>
+                                <StackPanel HorizontalAlignment="Stretch">
+                                    <TextBlock Text="{Binding Subject}" FontWeight="SemiBold" Foreground="#FFFFFF" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Sender}" Foreground="#9CDCFE" FontSize="11" Margin="0,3,0,0" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding BodyText}" Foreground="#888888" FontSize="11" TextWrapping="Wrap" Margin="0,5,0,0"/>
+                                </StackPanel>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
                 </DockPanel>
             </Border>
 
+            <!-- Splitter 2 -->
+            <GridSplitter Grid.Column="3" Width="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ShowsPreview="False" Cursor="SizeWE"/>
+
             <!-- Right Pane: Evidence, Claims & Contradiction Intelligence -->
-            <Border Grid.Column="2" Background="#1E1E1E" Padding="12">
+            <Border Grid.Column="4" Background="#1E1E1E" Padding="12">
                 <DockPanel>
                     <TextBlock Text="INTELLIGENCE &amp; CONTRADICTION ANALYSIS" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
-                    <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderBrush="#3F3F46">
-                        <TabItem Header="Selected Communication" Background="#2D2D30" Foreground="#CCCCCC">
+                    <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="#1E1E1E" BorderBrush="#3F3F46">
+                        <TabItem Header="Selected Communication">
                             <Grid Margin="8">
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -136,32 +205,42 @@
                                     <TextBlock Text="{Binding SelectedCommunication.Sender}" Foreground="#9CDCFE" Margin="0,2,0,6"/>
                                 </StackPanel>
                                 <TabControl Grid.Row="1" SelectedIndex="0" Background="#252526" BorderBrush="#3F3F46">
-                                    <TabItem Header="Rendered HTML" Background="#2D2D30" Foreground="#CCCCCC">
+                                    <TabItem Header="Rendered HTML">
                                         <WebBrowser controls:WebBrowserHelper.Html="{Binding SelectedCommunication.BodyHtml}" Margin="2"/>
                                     </TabItem>
-                                    <TabItem Header="Clean Text (Analysis View)" Background="#2D2D30" Foreground="#CCCCCC">
+                                    <TabItem Header="Clean Text (Analysis View)">
                                         <TextBox Text="{Binding SelectedCommunication.BodyText, Mode=OneWay}" Background="#252526" Foreground="#D4D4D4" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8"/>
                                     </TabItem>
                                 </TabControl>
                             </Grid>
                         </TabItem>
-                        <TabItem Header="Email Claims" Background="#2D2D30" Foreground="#CCCCCC">
+                        <TabItem Header="Email Claims">
                             <DockPanel Margin="8">
                                 <TextBlock Text="Extracted Claims for Selected Communication / Conversation:" FontWeight="SemiBold" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
-                                <ListBox ItemsSource="{Binding SelectedCommunicationClaims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                                <ListBox ItemsSource="{Binding SelectedCommunicationClaims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC"
+                                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,0,0,6"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6">
-                                                <StackPanel>
+                                            <Border Background="#252526" CornerRadius="4" Padding="8" HorizontalAlignment="Stretch">
+                                                <StackPanel HorizontalAlignment="Stretch">
                                                     <TextBlock Text="{Binding NormalizedAssertion}" FontWeight="Medium" Foreground="#FFFFFF" TextWrapping="Wrap"/>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <WrapPanel Margin="0,4,0,0">
                                                         <TextBlock Text="Speaker: " Foreground="#888888" FontSize="11"/>
                                                         <TextBlock Text="{Binding Subject}" Foreground="#4EC9B0" FontSize="11" Margin="0,0,8,0"/>
                                                         <TextBlock Text="Predicate: " Foreground="#888888" FontSize="11"/>
                                                         <TextBlock Text="{Binding Predicate}" Foreground="#DCDCAA" FontSize="11" Margin="0,0,8,0"/>
                                                         <TextBlock Text="Polarity: " Foreground="#888888" FontSize="11"/>
                                                         <TextBlock Text="{Binding Polarity}" Foreground="#CE9178" FontSize="11"/>
-                                                    </StackPanel>
+                                                    </WrapPanel>
                                                 </StackPanel>
                                             </Border>
                                         </DataTemplate>
@@ -169,19 +248,29 @@
                                 </ListBox>
                             </DockPanel>
                         </TabItem>
-                        <TabItem Header="Email Contradictions &amp; Correlations" Background="#2D2D30" Foreground="#CCCCCC">
+                        <TabItem Header="Email Contradictions &amp; Correlations">
                             <DockPanel Margin="8">
                                 <TextBlock Text="Contradictions &amp; Correlations for Selected Communication:" FontWeight="SemiBold" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
-                                <ListBox ItemsSource="{Binding SelectedCommunicationRelationships}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                                <ListBox ItemsSource="{Binding SelectedCommunicationRelationships}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC"
+                                         HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Margin" Value="0,0,0,6"/>
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6" BorderBrush="#F44747" BorderThickness="1">
-                                                <StackPanel>
-                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                            <Border Background="#252526" CornerRadius="4" Padding="8" BorderBrush="#F44747" BorderThickness="1" HorizontalAlignment="Stretch">
+                                                <StackPanel HorizontalAlignment="Stretch">
+                                                    <WrapPanel Margin="0,0,0,4">
                                                         <TextBlock Text="{Binding RelationshipType}" FontWeight="Bold" Foreground="#F44747" Margin="0,0,8,0"/>
                                                         <TextBlock Text="Confidence: " Foreground="#888888" FontSize="11"/>
                                                         <TextBlock Text="{Binding Confidence, StringFormat={}{0:P0}}" Foreground="#4EC9B0" FontSize="11"/>
-                                                    </StackPanel>
+                                                    </WrapPanel>
                                                     <TextBlock Text="{Binding Explanation}" Foreground="#D4D4D4" Margin="0,2,0,0" TextWrapping="Wrap"/>
                                                 </StackPanel>
                                             </Border>
@@ -190,26 +279,36 @@
                                 </ListBox>
                             </DockPanel>
                         </TabItem>
-                        <TabItem Header="Workspace Claims (All)" Background="#2D2D30" Foreground="#CCCCCC">
-                            <ListBox ItemsSource="{Binding Claims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="8">
+                        <TabItem Header="Workspace Claims (All)">
+                            <ListBox ItemsSource="{Binding Claims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="8"
+                                     HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Margin" Value="0,0,0,6"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6">
-                                            <StackPanel>
+                                        <Border Background="#252526" CornerRadius="4" Padding="8" HorizontalAlignment="Stretch">
+                                            <StackPanel HorizontalAlignment="Stretch">
                                                 <TextBlock Text="{Binding NormalizedAssertion}" FontWeight="Medium" Foreground="#FFFFFF" TextWrapping="Wrap"/>
-                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                <WrapPanel Margin="0,4,0,0">
                                                     <TextBlock Text="Speaker: " Foreground="#888888" FontSize="11"/>
                                                     <TextBlock Text="{Binding Subject}" Foreground="#4EC9B0" FontSize="11" Margin="0,0,8,0"/>
                                                     <TextBlock Text="Polarity: " Foreground="#888888" FontSize="11"/>
                                                     <TextBlock Text="{Binding Polarity}" Foreground="#CE9178" FontSize="11"/>
-                                                </StackPanel>
+                                                </WrapPanel>
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
                         </TabItem>
-                        <TabItem Header="Settings &amp; Configuration" Background="#2D2D30" Foreground="#CCCCCC">
+                        <TabItem Header="Settings &amp; Configuration">
                             <ScrollViewer Margin="8">
                                 <StackPanel Margin="4">
                                     <TextBlock Text="Microsoft 365 (Entra ID / Azure AD) Settings" FontSize="14" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,12"/>

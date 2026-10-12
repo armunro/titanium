@@ -115,6 +115,71 @@ public class SqlitePersistenceIntegrationTests : IDisposable
     }
 
     [Fact]
+    public async Task DeleteWorkspaceAsync_DeletesWorkspaceAndCascadeCleansAssociatedData()
+    {
+        // 1. Create two workspaces
+        var ws1 = new Workspace { Name = "Workspace to Delete", Description = "WS1" };
+        var ws2 = new Workspace { Name = "Workspace to Keep", Description = "WS2" };
+        _context.Workspaces.AddRange(ws1, ws2);
+        await _context.SaveChangesAsync();
+
+        // 2. Add matters, communications, statements, claims, and relationships to ws1
+        var matter1 = new Matter { WorkspaceId = ws1.Id, Name = "Matter in WS1" };
+        var matter2 = new Matter { WorkspaceId = ws2.Id, Name = "Matter in WS2" };
+        _context.Matters.AddRange(matter1, matter2);
+        await _context.SaveChangesAsync();
+
+        var comm1 = new Communication { WorkspaceId = ws1.Id, Subject = "WS1 Email", Sender = "a@test.com", BodyText = "Text 1" };
+        var comm2 = new Communication { WorkspaceId = ws2.Id, Subject = "WS2 Email", Sender = "b@test.com", BodyText = "Text 2" };
+        _context.Communications.AddRange(comm1, comm2);
+        await _context.SaveChangesAsync();
+
+        var stmt1 = new Statement { CommunicationId = comm1.Id, OriginalText = "Text 1 statement", SpeakerName = "a@test.com" };
+        _context.Statements.Add(stmt1);
+        await _context.SaveChangesAsync();
+
+        var claim1 = new Claim { WorkspaceId = ws1.Id, Subject = "a@test.com", Predicate = "Fact", Object = "assertion 1" };
+        var claim2 = new Claim { WorkspaceId = ws1.Id, Subject = "a@test.com", Predicate = "Fact", Object = "assertion 2" };
+        var claim3 = new Claim { WorkspaceId = ws2.Id, Subject = "b@test.com", Predicate = "Fact", Object = "assertion 3" };
+        _context.Claims.AddRange(claim1, claim2, claim3);
+        await _context.SaveChangesAsync();
+
+        var rel1 = new ClaimRelationship { SourceClaimId = claim1.Id, TargetClaimId = claim2.Id, RelationshipType = ClaimRelationshipType.Contradicts, Explanation = "Contradiction test" };
+        _context.ClaimRelationships.Add(rel1);
+        await _context.SaveChangesAsync();
+
+        // Verify entities exist
+        Assert.Equal(2, await _context.Workspaces.CountAsync());
+        Assert.Equal(2, await _context.Matters.CountAsync());
+        Assert.Equal(2, await _context.Communications.CountAsync());
+        Assert.Equal(3, await _context.Claims.CountAsync());
+        Assert.Equal(1, await _context.ClaimRelationships.CountAsync());
+
+        // 3. Delete ws1
+        await _context.DeleteWorkspaceAsync(ws1.Id);
+
+        // 4. Verify ws1 and its associated data are removed, while ws2 data remains
+        var remainingWorkspaces = await _context.Workspaces.ToListAsync();
+        Assert.Single(remainingWorkspaces);
+        Assert.Equal(ws2.Id, remainingWorkspaces[0].Id);
+
+        var remainingMatters = await _context.Matters.ToListAsync();
+        Assert.Single(remainingMatters);
+        Assert.Equal(matter2.Id, remainingMatters[0].Id);
+
+        var remainingComms = await _context.Communications.ToListAsync();
+        Assert.Single(remainingComms);
+        Assert.Equal(comm2.Id, remainingComms[0].Id);
+
+        Assert.Empty(await _context.Statements.Where(s => s.CommunicationId == comm1.Id).ToListAsync());
+        Assert.Empty(await _context.ClaimRelationships.Where(r => r.SourceClaimId == claim1.Id || r.TargetClaimId == claim2.Id).ToListAsync());
+
+        var remainingClaims = await _context.Claims.ToListAsync();
+        Assert.Single(remainingClaims);
+        Assert.Equal(claim3.Id, remainingClaims[0].Id);
+    }
+
+    [Fact]
     public async Task InitializeDatabaseAsync_MigratesExistingTablesWithMissingColumns()
     {
         var legacyDbPath = Path.Combine(Path.GetTempPath(), $"titanium_legacy_{Guid.NewGuid()}.db");
