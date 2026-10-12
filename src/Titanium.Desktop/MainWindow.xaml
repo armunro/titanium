@@ -1,0 +1,275 @@
+﻿<Window x:Class="Titanium.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Titanium.Desktop.ViewModels"
+        xmlns:controls="clr-namespace:Titanium.Desktop.Controls"
+        mc:Ignorable="d"
+        Title="Titanium — Communication Intelligence &amp; Evidence Management Platform" Height="750" Width="1200"
+        Background="#1E1E1E" Foreground="#CCCCCC" FontFamily="Segoe UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header / App Bar -->
+        <Border Grid.Row="0" Background="#252526" Padding="16,12" BorderBrush="#3F3F46" BorderThickness="0,0,0,1">
+            <DockPanel LastChildFill="True">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <TextBlock Text="TITANIUM" FontSize="18" FontWeight="Bold" Foreground="#007ACC" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <TextBlock Text="Communication Intelligence &amp; Evidence Management" FontSize="13" Foreground="#888888" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="Sync M365 Mailbox" Command="{Binding SyncMailboxCommand}" Background="#0E639C" Foreground="White" Padding="12,6" Margin="0,0,8,0" BorderThickness="0"/>
+                    <Button Content="Settings &amp; M365" Command="{Binding OpenSettingsCommand}" Background="#3F3F46" Foreground="White" Padding="12,6" Margin="0,0,8,0" BorderThickness="0"/>
+                    <Button Content="New Workspace" Command="{Binding CreateWorkspaceCommand}" Background="#3F3F46" Foreground="White" Padding="12,6" Margin="0,0,8,0" BorderThickness="0"/>
+                    <Button Content="Refresh" Command="{Binding RefreshDataCommand}" Background="#3F3F46" Foreground="White" Padding="12,6" Margin="0,0,8,0" BorderThickness="0"/>
+                    <Button Content="Purge DB" Command="{Binding PurgeDatabaseCommand}" Background="#C5221F" Foreground="White" Padding="12,6" BorderThickness="0" ToolTip="Purge all database records"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Metrics Dashboard Bar -->
+        <Border Grid.Row="1" Background="#2D2D30" Padding="16,8" BorderBrush="#3F3F46" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Border Background="#333337" CornerRadius="4" Padding="12,6" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Communications: " Foreground="#AAAAAA"/>
+                        <TextBlock Text="{Binding TotalCommunicationsCount}" FontWeight="Bold" Foreground="#4EC9B0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#333337" CornerRadius="4" Padding="12,6" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Extracted Claims: " Foreground="#AAAAAA"/>
+                        <TextBlock Text="{Binding TotalClaimsCount}" FontWeight="Bold" Foreground="#CE9178"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#333337" CornerRadius="4" Padding="12,6" Margin="0,0,12,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Potential Contradictions: " Foreground="#AAAAAA"/>
+                        <TextBlock Text="{Binding ContradictionsCount}" FontWeight="Bold" Foreground="#F44747"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+
+        <!-- Main 3-Pane Investigation Layout -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="260" MinWidth="200"/>
+                <ColumnDefinition Width="380" MinWidth="250"/>
+                <ColumnDefinition Width="*" MinWidth="350"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Pane: Workspaces & Matters -->
+            <Border Grid.Column="0" Background="#252526" BorderBrush="#3F3F46" BorderThickness="0,0,1,0" Padding="10">
+                <DockPanel>
+                    <TextBlock Text="WORKSPACES" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                    <ListBox ItemsSource="{Binding Workspaces}" SelectedItem="{Binding SelectedWorkspace}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="0,0,0,8" DockPanel.Dock="Top" MaxHeight="120">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" FontWeight="Medium" Padding="4"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                    <!-- Workspace Target Folders Configuration -->
+                    <Border Background="#1E1E1E" CornerRadius="4" Padding="8" Margin="0,0,0,12" DockPanel.Dock="Top" BorderBrush="#3F3F46" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="SYNC FOLDERS" FontWeight="SemiBold" FontSize="10" Foreground="#4EC9B0" Margin="0,0,0,4"/>
+                            <TextBlock Text="Pull emails only from folder(s):" FontSize="11" Foreground="#888888" Margin="0,0,0,4"/>
+                            <TextBox Text="{Binding WorkspaceTargetFoldersText, UpdateSourceTrigger=PropertyChanged}" Background="#252526" Foreground="#FFFFFF" BorderBrush="#3F3F46" Padding="4" FontSize="11" Margin="0,0,0,6" ToolTip="Comma or semicolon separated folder names, e.g. 'Inbox, Dispute, Legal, Archive'"/>
+                            <Button Content="Save Folders" Command="{Binding SaveWorkspaceFoldersCommand}" Background="#0E639C" Foreground="White" FontSize="11" Padding="8,4" HorizontalAlignment="Right" BorderThickness="0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="MATTERS" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,4,0,8"/>
+                    <ListBox ItemsSource="{Binding Matters}" SelectedItem="{Binding SelectedMatter}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" Padding="4"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Center Pane: Communications History -->
+            <Border Grid.Column="1" Background="#1E1E1E" BorderBrush="#3F3F46" BorderThickness="0,0,1,0" Padding="10">
+                <DockPanel>
+                    <TextBlock Text="COMMUNICATION EXPLORER" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                    <ListBox ItemsSource="{Binding Communications}" SelectedItem="{Binding SelectedCommunication}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#2D2D30" CornerRadius="4" Padding="8" Margin="0,0,0,6">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Subject}" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Sender}" Foreground="#9CDCFE" FontSize="11" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding BodyText}" Foreground="#888888" FontSize="11" MaxHeight="32" TextTrimming="CharacterEllipsis" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Right Pane: Evidence, Claims & Contradiction Intelligence -->
+            <Border Grid.Column="2" Background="#1E1E1E" Padding="12">
+                <DockPanel>
+                    <TextBlock Text="INTELLIGENCE &amp; CONTRADICTION ANALYSIS" FontWeight="SemiBold" FontSize="11" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                    <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderBrush="#3F3F46">
+                        <TabItem Header="Selected Communication" Background="#2D2D30" Foreground="#CCCCCC">
+                            <Grid Margin="8">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                    <TextBlock Text="Subject:" FontWeight="Bold" Foreground="#888888"/>
+                                    <TextBlock Text="{Binding SelectedCommunication.Subject}" FontSize="14" Foreground="#FFFFFF" Margin="0,2,0,6"/>
+                                    <TextBlock Text="Sender:" FontWeight="Bold" Foreground="#888888"/>
+                                    <TextBlock Text="{Binding SelectedCommunication.Sender}" Foreground="#9CDCFE" Margin="0,2,0,6"/>
+                                </StackPanel>
+                                <TabControl Grid.Row="1" SelectedIndex="0" Background="#252526" BorderBrush="#3F3F46">
+                                    <TabItem Header="Rendered HTML" Background="#2D2D30" Foreground="#CCCCCC">
+                                        <WebBrowser controls:WebBrowserHelper.Html="{Binding SelectedCommunication.BodyHtml}" Margin="2"/>
+                                    </TabItem>
+                                    <TabItem Header="Clean Text (Analysis View)" Background="#2D2D30" Foreground="#CCCCCC">
+                                        <TextBox Text="{Binding SelectedCommunication.BodyText, Mode=OneWay}" Background="#252526" Foreground="#D4D4D4" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8"/>
+                                    </TabItem>
+                                </TabControl>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="Email Claims" Background="#2D2D30" Foreground="#CCCCCC">
+                            <DockPanel Margin="8">
+                                <TextBlock Text="Extracted Claims for Selected Communication / Conversation:" FontWeight="SemiBold" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                                <ListBox ItemsSource="{Binding SelectedCommunicationClaims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding NormalizedAssertion}" FontWeight="Medium" Foreground="#FFFFFF" TextWrapping="Wrap"/>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                        <TextBlock Text="Speaker: " Foreground="#888888" FontSize="11"/>
+                                                        <TextBlock Text="{Binding Subject}" Foreground="#4EC9B0" FontSize="11" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="Predicate: " Foreground="#888888" FontSize="11"/>
+                                                        <TextBlock Text="{Binding Predicate}" Foreground="#DCDCAA" FontSize="11" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="Polarity: " Foreground="#888888" FontSize="11"/>
+                                                        <TextBlock Text="{Binding Polarity}" Foreground="#CE9178" FontSize="11"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </TabItem>
+                        <TabItem Header="Email Contradictions &amp; Correlations" Background="#2D2D30" Foreground="#CCCCCC">
+                            <DockPanel Margin="8">
+                                <TextBlock Text="Contradictions &amp; Correlations for Selected Communication:" FontWeight="SemiBold" Foreground="#888888" DockPanel.Dock="Top" Margin="0,0,0,8"/>
+                                <ListBox ItemsSource="{Binding SelectedCommunicationRelationships}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6" BorderBrush="#F44747" BorderThickness="1">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                                        <TextBlock Text="{Binding RelationshipType}" FontWeight="Bold" Foreground="#F44747" Margin="0,0,8,0"/>
+                                                        <TextBlock Text="Confidence: " Foreground="#888888" FontSize="11"/>
+                                                        <TextBlock Text="{Binding Confidence, StringFormat={}{0:P0}}" Foreground="#4EC9B0" FontSize="11"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Explanation}" Foreground="#D4D4D4" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </DockPanel>
+                        </TabItem>
+                        <TabItem Header="Workspace Claims (All)" Background="#2D2D30" Foreground="#CCCCCC">
+                            <ListBox ItemsSource="{Binding Claims}" Background="Transparent" BorderThickness="0" Foreground="#CCCCCC" Margin="8">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#252526" CornerRadius="4" Padding="8" Margin="0,0,0,6">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding NormalizedAssertion}" FontWeight="Medium" Foreground="#FFFFFF" TextWrapping="Wrap"/>
+                                                <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                                    <TextBlock Text="Speaker: " Foreground="#888888" FontSize="11"/>
+                                                    <TextBlock Text="{Binding Subject}" Foreground="#4EC9B0" FontSize="11" Margin="0,0,8,0"/>
+                                                    <TextBlock Text="Polarity: " Foreground="#888888" FontSize="11"/>
+                                                    <TextBlock Text="{Binding Polarity}" Foreground="#CE9178" FontSize="11"/>
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </TabItem>
+                        <TabItem Header="Settings &amp; Configuration" Background="#2D2D30" Foreground="#CCCCCC">
+                            <ScrollViewer Margin="8">
+                                <StackPanel Margin="4">
+                                    <TextBlock Text="Microsoft 365 (Entra ID / Azure AD) Settings" FontSize="14" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,12"/>
+                                    
+                                    <TextBlock Text="Client ID (Application ID):" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding M365ClientId, UpdateSourceTrigger=PropertyChanged}" Background="#252526" Foreground="#FFFFFF" BorderBrush="#3F3F46" Padding="6" Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="Tenant ID (Directory ID / 'common' / 'consumers' / 'organizations'):" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding M365TenantId, UpdateSourceTrigger=PropertyChanged}" Background="#252526" Foreground="#FFFFFF" BorderBrush="#3F3F46" Padding="6" Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="Redirect URI (Default: http://localhost):" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding M365RedirectUri, UpdateSourceTrigger=PropertyChanged}" Background="#252526" Foreground="#FFFFFF" BorderBrush="#3F3F46" Padding="6" Margin="0,0,0,10"/>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,16">
+                                        <Button Content="Save Settings" Command="{Binding SaveSettingsCommand}" Background="#0E639C" Foreground="White" Padding="14,6" Margin="0,0,8,0" BorderThickness="0"/>
+                                        <Button Content="Sign In / Test Connection" Command="{Binding TestM365ConnectionCommand}" Background="#3F3F46" Foreground="White" Padding="14,6" Margin="0,0,8,0" BorderThickness="0"/>
+                                        <Button Content="Sign Out" Command="{Binding SignOutM365Command}" Background="#3F3F46" Foreground="White" Padding="14,6" BorderThickness="0"/>
+                                    </StackPanel>
+
+                                    <Border Background="#252526" CornerRadius="4" Padding="10" Margin="0,0,0,16" BorderBrush="#3F3F46" BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="Account Status:" FontWeight="Bold" Foreground="#888888" Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding M365AccountStatus}" Foreground="#4EC9B0" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                                            <TextBlock Text="{Binding SettingsStatusMessage}" Foreground="#CE9178" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Separator Background="#3F3F46" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="Storage &amp; Database (Portable SQLite)" FontSize="14" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Titanium uses an embedded, high-performance SQLite database. No external database servers or services are required." Foreground="#888888" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                    
+                                    <TextBlock Text="Database Provider:" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding DatabaseProvider}" Foreground="#4EC9B0" Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="Local Database File Path:" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBox Text="{Binding DatabasePath, Mode=OneWay}" Background="#252526" Foreground="#D4D4D4" BorderBrush="#3F3F46" IsReadOnly="True" Padding="6" Margin="0,0,0,10"/>
+
+                                    <StackPanel Margin="0,4,0,16">
+                                        <TextBlock Text="Danger Zone:" FontWeight="SemiBold" Foreground="#F44747" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Purging the database permanently deletes all imported communications, extracted claims, conversations, matters, and intelligence records." Foreground="#888888" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                        <Button Content="Purge Database" Command="{Binding PurgeDatabaseCommand}" Background="#C5221F" Foreground="White" FontWeight="SemiBold" Padding="14,6" HorizontalAlignment="Left" BorderThickness="0"/>
+                                    </StackPanel>
+
+                                    <Separator Background="#3F3F46" Margin="0,0,0,16"/>
+
+                                    <TextBlock Text="AI &amp; Intelligence Provider" FontSize="14" FontWeight="Bold" Foreground="#007ACC" Margin="0,0,0,8"/>
+                                    <TextBlock Text="Provider Engine:" FontWeight="SemiBold" Foreground="#CCCCCC" Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding AiProvider}" Foreground="#4EC9B0" Margin="0,0,0,8"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </TabItem>
+                    </TabControl>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="#007ACC" Padding="8,4">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="White" FontSize="11"/>
+        </Border>
+    </Grid>
+</Window>
