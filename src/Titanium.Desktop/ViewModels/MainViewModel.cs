@@ -232,6 +232,15 @@ public class MainViewModel : ViewModelBase
                     await _dbContext.SaveChangesAsync();
 
                     UpdateWorkspaceFoldersText();
+                    
+                    // Refresh collection notification to ensure all bound controls update immediately
+                    var index = Workspaces.IndexOf(targetWorkspace);
+                    if (index >= 0)
+                    {
+                        Workspaces[index] = targetWorkspace;
+                        SelectedWorkspace = targetWorkspace;
+                    }
+
                     OnPropertyChanged(nameof(Workspaces));
                     OnPropertyChanged(nameof(SelectedWorkspace));
 

@@ -5,10 +5,34 @@ namespace Titanium.Domain.Entities;
 
 public class Workspace : BaseEntity
 {
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public string? OwnerId { get; set; }
-    public List<string> TargetFolders { get; set; } = new() { "Inbox" };
+    private string _name = string.Empty;
+    private string? _description;
+    private string? _ownerId;
+    private List<string> _targetFolders = new() { "Inbox" };
+
+    public string Name
+    {
+        get => _name;
+        set => SetProperty(ref _name, value);
+    }
+
+    public string? Description
+    {
+        get => _description;
+        set => SetProperty(ref _description, value);
+    }
+
+    public string? OwnerId
+    {
+        get => _ownerId;
+        set => SetProperty(ref _ownerId, value);
+    }
+
+    public List<string> TargetFolders
+    {
+        get => _targetFolders;
+        set => SetProperty(ref _targetFolders, value);
+    }
 
     public ICollection<Matter> Matters { get; set; } = new List<Matter>();
     public ICollection<Communication> Communications { get; set; } = new List<Communication>();

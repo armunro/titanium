@@ -194,24 +194,58 @@
                     <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="#1E1E1E" BorderBrush="#3F3F46">
                         <TabItem Header="Selected Communication">
                             <Grid Margin="8">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <StackPanel Grid.Row="0" Margin="0,0,0,8">
-                                    <TextBlock Text="Subject:" FontWeight="Bold" Foreground="#888888"/>
-                                    <TextBlock Text="{Binding SelectedCommunication.Subject}" FontSize="14" Foreground="#FFFFFF" Margin="0,2,0,6"/>
-                                    <TextBlock Text="Sender:" FontWeight="Bold" Foreground="#888888"/>
-                                    <TextBlock Text="{Binding SelectedCommunication.Sender}" Foreground="#9CDCFE" Margin="0,2,0,6"/>
-                                </StackPanel>
-                                <TabControl Grid.Row="1" SelectedIndex="0" Background="#252526" BorderBrush="#3F3F46">
-                                    <TabItem Header="Rendered HTML">
-                                        <WebBrowser controls:WebBrowserHelper.Html="{Binding SelectedCommunication.BodyHtml}" Margin="2"/>
-                                    </TabItem>
-                                    <TabItem Header="Clean Text (Analysis View)">
-                                        <TextBox Text="{Binding SelectedCommunication.BodyText, Mode=OneWay}" Background="#252526" Foreground="#D4D4D4" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8"/>
-                                    </TabItem>
-                                </TabControl>
+                                <!-- Empty / No Selection State -->
+                                <Border Background="#252526" CornerRadius="4" Padding="24"
+                                        HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedCommunication}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="✉" FontSize="42" Foreground="#555555" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                                        <TextBlock Text="No Communication Selected" FontSize="16" FontWeight="SemiBold" Foreground="#CCCCCC" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                                        <TextBlock Text="Select an email from the Communication Explorer on the left to inspect its content, extracted claims, and contradiction intelligence."
+                                                   FontSize="12" Foreground="#888888" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="360" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Communication Details (when SelectedCommunication is not null) -->
+                                <Grid>
+                                    <Grid.Style>
+                                        <Style TargetType="Grid">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding SelectedCommunication}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Grid.Style>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                        <TextBlock Text="Subject:" FontWeight="Bold" Foreground="#888888"/>
+                                        <TextBlock Text="{Binding SelectedCommunication.Subject}" FontSize="14" Foreground="#FFFFFF" Margin="0,2,0,6" TextWrapping="Wrap"/>
+                                        <TextBlock Text="Sender:" FontWeight="Bold" Foreground="#888888"/>
+                                        <TextBlock Text="{Binding SelectedCommunication.Sender}" Foreground="#9CDCFE" Margin="0,2,0,6" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <TabControl Grid.Row="1" SelectedIndex="0" Background="#252526" BorderBrush="#3F3F46">
+                                        <TabItem Header="Rendered HTML">
+                                            <WebBrowser controls:WebBrowserHelper.Html="{Binding SelectedCommunication.BodyHtml}" Margin="2"/>
+                                        </TabItem>
+                                        <TabItem Header="Clean Text (Analysis View)">
+                                            <TextBox Text="{Binding SelectedCommunication.BodyText, Mode=OneWay}" Background="#252526" Foreground="#D4D4D4" BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Padding="8"/>
+                                        </TabItem>
+                                    </TabControl>
+                                </Grid>
                             </Grid>
                         </TabItem>
                         <TabItem Header="Email Claims">
